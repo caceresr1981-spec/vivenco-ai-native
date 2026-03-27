@@ -89,8 +89,9 @@
       selectOptionsHtml(UAT_STATUSES, '') +
       '</select>' +
       '</label>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="uat-export-backup">Exportar uat.json (respaldo)</button>' +
       '</div>' +
-      '<p class="uat-save-hint">Si configuraste la API (<code>config.js</code>), «Aplicar cambios» guarda en el servidor. Si no, vincula <code>uat.json</code> en <a href="tracker.html">Proyectos</a> (engranaje) o descarga el JSON. Con <code>uat.data.js</code> local ejecuta <code>scripts/sync-tracker-data.ps1</code> tras editar archivos.</p>'
+      '<p class="uat-save-hint">Con la API en <code>config.js</code>, «Aplicar cambios» sincroniza <strong>proyectos + UAT</strong> en el servidor. En local (engranaje), se intentan guardar ambos JSON si están vinculados. La exportación es solo copia manual de respaldo.</p>'
     );
   }
 
@@ -279,44 +280,44 @@
       .then(function (r) {
         if (r && r.ok) {
           if (r.source === 'api') {
-            setSyncStatus(
-              'Cambios guardados en el servidor (API). En Cursor: pull o copia el JSON desde el volumen si aplica.'
-            );
+            setSyncStatus('Sincronizado: proyectos + UAT en el servidor (una sola petición).');
             if (window.__TRACKER_UAT__ && window.__PROJECT_UAT_STATE__ && window.__PROJECT_UAT_STATE__.fullUat) {
               window.__TRACKER_UAT__ = JSON.parse(JSON.stringify(window.__PROJECT_UAT_STATE__.fullUat));
             }
+          } else if (r.source === 'disk' && r.wroteProjects) {
+            setSyncStatus('Guardado en disco: UAT y projects.json vinculados.');
+          } else if (r.source === 'disk') {
+            setSyncStatus(
+              'UAT guardado en disco. Si también quieres actualizar projects.json, vincúlalo en Proyectos (engranaje) o usa la API.'
+            );
           } else {
-            setSyncStatus('Cambios guardados en el archivo vinculado (uat.json).');
+            setSyncStatus('Cambios guardados.');
           }
         } else if (r && r.reason === 'no_handle') {
           setSyncStatus(
-            'No hay archivo vinculado: el navegador no puede escribir en tu disco sin permiso. Se descarga uat.json — reemplázalo en data/ y ejecuta sync-tracker-data.ps1. O vincula en Proyectos (engranaje).'
+            'Sin permiso de escritura local: vincula uat.json y projects.json en Proyectos (engranaje), o configura la API en config.js. Usa «Exportar» solo si quieres una copia manual.'
           );
-          downloadCurrentUatJson();
         } else if (r && r.reason === 'permission_denied') {
-          setSyncStatus('Permiso denegado al escribir. Se descarga uat.json para que lo copies a data/.');
-          downloadCurrentUatJson();
+          setSyncStatus('Permiso denegado al escribir. Vuelve a vincular los JSON o usa la API.');
         } else if (r && r.reason === 'unsupported') {
           setSyncStatus(
-            'Este navegador no puede escribir en disco. Se descarga uat.json — guárdalo en data/ (Chrome/Edge permite vincular archivo).'
+            'Este navegador no permite escribir en disco. Configura la API o usa Chrome/Edge con archivos vinculados.'
           );
-          downloadCurrentUatJson();
         } else if (r && r.reason === 'api_unauthorized') {
-          setSyncStatus('API: token inválido. Revisa __TRACKER_API_TOKEN__ en config.js o la variable en Railway.');
+          setSyncStatus('API: token inválido. Revisa __TRACKER_API_TOKEN__ en config.js o Railway.');
+        } else if (r && r.reason === 'no_projects') {
+          setSyncStatus('No hay datos de proyectos en memoria. Recarga la página o revisa la carga desde la API.');
         } else if (r && r.reason === 'api_failed') {
-          setSyncStatus('No se pudo guardar en la API. Revisa la red o el servidor.');
-          downloadCurrentUatJson();
+          setSyncStatus('No se pudo guardar en la API. Revisa red, CORS y que el servicio esté activo.');
         } else {
           setSyncStatus(
-            'Cambios en memoria. Vincula uat.json en Proyectos (engranaje) o usa la descarga automática.'
+            'No se pudo guardar. Configura la API, vincula los JSON en Proyectos, o exporta manualmente con el botón de respaldo.'
           );
-          downloadCurrentUatJson();
         }
         closeUatModal();
       })
       .catch(function () {
-        setSyncStatus('Error al escribir en disco. Se descarga uat.json para que lo reemplaces en data/.');
-        downloadCurrentUatJson();
+        setSyncStatus('Error al guardar. Revisa la consola o la red; puedes usar «Exportar uat.json» como respaldo.');
         closeUatModal();
       });
   }
@@ -343,8 +344,13 @@
     }
     state.fullUat.updatedAt = new Date().toISOString().slice(0, 10);
     var body = state.fullUat;
-    if (window.TrackerApi && window.TrackerApi.isConfigured()) {
-      return window.TrackerApi.putJson('uat', body).then(function (r) {
+
+    if (window.TrackerApi && window.TrackerApi.isConfigured() && window.TrackerApi.putSync) {
+      var projects = window.__TRACKER_PROJECTS__;
+      if (!projects) {
+        return Promise.resolve({ ok: false, reason: 'no_projects' });
+      }
+      return window.TrackerApi.putSync({ uat: body, projects: projects }).then(function (r) {
         if (r && r.ok) return { ok: true, source: 'api' };
         if (r && r.reason === 'unauthorized') {
           return { ok: false, reason: 'api_unauthorized' };
@@ -352,12 +358,29 @@
         return { ok: false, reason: 'api_failed' };
       });
     }
-    var json = JSON.stringify(body, null, 2);
-    if (window.JsonDiskSync && window.JsonDiskSync.supported && window.JsonDiskSync.writeJsonString) {
-      return window.JsonDiskSync.writeJsonString('uat', json);
+
+    var jsonUat = JSON.stringify(body, null, 2);
+    var J = window.JsonDiskSync;
+    if (J && J.supported && J.writeJsonString) {
+      return J.writeJsonString('uat', jsonUat).then(function (ru) {
+        if (!ru.ok) return ru;
+        var pj = window.__TRACKER_PROJECTS__;
+        if (!pj) return { ok: true, source: 'disk', wroteProjects: false };
+        var jsonP = JSON.stringify(pj, null, 2);
+        return J.writeJsonString('projects', jsonP).then(function (rp) {
+          return {
+            ok: true,
+            source: 'disk',
+            wroteProjects: !!(rp && rp.ok)
+          };
+        });
+      });
     }
     if (window.UatDiskSync && window.UatDiskSync.supported) {
-      return window.UatDiskSync.writeJsonString(json);
+      return window.UatDiskSync.writeJsonString(jsonUat).then(function (ru) {
+        if (ru && ru.ok) return { ok: true, source: 'disk', wroteProjects: false };
+        return ru;
+      });
     }
     return Promise.resolve({ ok: false, reason: 'unsupported' });
   }
@@ -376,6 +399,14 @@
     var filter = document.getElementById('uat-filter');
     if (filter) {
       filter.addEventListener('change', applyUatFilter);
+    }
+
+    var exportBtn = document.getElementById('uat-export-backup');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function () {
+        downloadCurrentUatJson();
+        setSyncStatus('Descarga de uat.json iniciada (respaldo manual).');
+      });
     }
 
     var tbody = document.querySelector('#uat-table tbody');

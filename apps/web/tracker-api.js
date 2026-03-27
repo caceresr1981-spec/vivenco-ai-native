@@ -48,11 +48,32 @@
     });
   }
 
+  /**
+   * Sincronización centralizada en el servidor: envía proyectos + UAT en un solo PUT.
+   * Así projects.json y uat.json quedan alineados en el mismo request.
+   */
+  function putSync(payload) {
+    var base = getBase();
+    if (!base) {
+      return Promise.resolve({ ok: false, reason: 'no_api' });
+    }
+    return fetch(base + '/api/sync', {
+      method: 'PUT',
+      headers: headersJson(),
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      if (r.status === 401) return { ok: false, reason: 'unauthorized' };
+      if (!r.ok) return { ok: false, reason: 'http_' + r.status };
+      return { ok: true };
+    });
+  }
+
   global.TrackerApi = {
     getBase: getBase,
     getToken: getToken,
     isConfigured: isConfigured,
     fetchJson: fetchJson,
-    putJson: putJson
+    putJson: putJson,
+    putSync: putSync
   };
 })(window);

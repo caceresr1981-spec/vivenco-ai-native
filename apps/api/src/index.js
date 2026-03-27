@@ -93,6 +93,32 @@ app.put('/api/uat', requireWriteAuth, async function (req, res) {
   }
 });
 
+/** Sincronización centralizada: escribe projects.json y/o uat.json en una sola petición. */
+app.put('/api/sync', requireWriteAuth, async function (req, res) {
+  try {
+    const body = req.body;
+    if (!body || typeof body !== 'object') {
+      return res.status(400).json({ error: 'invalid_body' });
+    }
+    const hasProjects = body.projects != null && typeof body.projects === 'object';
+    const hasUat = body.uat != null && typeof body.uat === 'object';
+    if (!hasProjects && !hasUat) {
+      return res.status(400).json({ error: 'need_projects_or_uat' });
+    }
+    if (hasProjects) await writeJsonAtomic(PROJECTS_FILE, body.projects);
+    if (hasUat) await writeJsonAtomic(UAT_FILE, body.uat);
+    res.json({
+      ok: true,
+      wroteProjects: hasProjects,
+      wroteUat: hasUat,
+      updatedAtProjects: hasProjects ? body.projects.updatedAt || null : null,
+      updatedAtUat: hasUat ? body.uat.updatedAt || null : null
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'write_failed', message: String(e.message) });
+  }
+});
+
 app.listen(PORT, function () {
   console.log('tracker-api listening on port', PORT, 'DATA_DIR=', DATA_DIR, 'auth=', TOKEN ? 'on' : 'off');
 });

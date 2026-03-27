@@ -6,7 +6,7 @@
 |------|-----|
 | `apps/web/` | Sitio estático (HTML/CSS/JS). **Vercel** despliega esta carpeta. |
 | `apps/web/data/` | `projects.json`, `uat.json` y los `.data.js` generados. **Fuente de verdad en Git** para Cursor. |
-| `apps/api/` | Servidor Node (Express): `GET/PUT /api/projects` y `/api/uat`. **Docker / Railway**. |
+| `apps/api/` | Servidor Node (Express): `GET/PUT /api/projects`, `/api/uat`, y **`PUT /api/sync`** (proyectos + UAT en un solo request). **Docker / Railway**. |
 | `scripts/sync-tracker-data.*` | Regenera `*.data.js` desde los JSON (local sin servidor). |
 
 ## Cargar datos en la web
@@ -40,7 +40,7 @@ Orden de prioridad en `tracker-shared.js`: **API configurada → variables globa
 
 1. Abre `tracker.html` con Chrome/Edge.
 2. Engranaje → **Vincular** `projects.json` / `uat.json` en `apps/web/data/`.
-3. **Aplicar cambios** en UAT escribe en el archivo vinculado (File System Access API).
+3. **Aplicar cambios** en UAT intenta escribir **ambos** archivos si hay datos de proyectos en memoria y `projects.json` está vinculado (tras UAT, se escribe `projects.json` con el estado actual).
 4. Ejecuta el script de sync si necesitas `*.data.js` para abrir sin servidor.
 
 ### C) Cambios desde el navegador (producción / API)
@@ -55,7 +55,7 @@ Orden de prioridad en `tracker-shared.js`: **API configurada → variables globa
    window.__TRACKER_API_TOKEN__ = 'el-mismo-token-que-railway';
    ```
 
-5. **Aplicar cambios** hace `PUT /api/uat` (y puedes ampliar a proyectos con el mismo patrón).
+5. **Aplicar cambios** en UAT llama a **`PUT /api/sync`** con `{ projects, uat }` para que **proyectos y UAT** se persistan juntos en el servidor (sincronización centralizada). No se fuerza descarga automática de JSON; el botón «Exportar uat.json» es solo respaldo manual.
 
 **Git vs API en Railway:** los archivos viven en el contenedor. Para que Cursor vea los mismos datos, o bien **exportas** JSON (descarga desde la UI / endpoint) y commiteas, o montas **volumen persistente** y documentas copia manual, o evolucionas a base de datos + export.
 
