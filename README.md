@@ -62,9 +62,18 @@ Ajusta `apps/web/config.js` con esa base URL y token antes de probar guardado de
 ## Vercel (frontend)
 
 1. Conecta el repo en Vercel.
-2. **Root Directory:** `apps/web`.
+2. **Root Directory:** `apps/web` (obligatorio para que `/` sirva `index.html`).
 3. Sin framework; despliegue estático.
 4. Añade un paso de build opcional que genere `config.js` con la URL pública de Railway, o edita `config.js` en el repo (menos ideal si incluye token; para uso interno puede valer).
+
+### Error 404 NOT_FOUND en Vercel
+
+Suele pasar si **Root Directory** quedó en la raíz del monorepo: ahí no hay `index.html`, solo en `apps/web/`.
+
+- **Solución recomendada:** Vercel → proyecto → **Settings → General → Root Directory** → `apps/web` → **Redeploy**.
+- **Si despliegas desde la raíz del repo:** el repo incluye `vercel.json` (redirección `/` → `/apps/web/`) y un `index.html` de respaldo en la raíz; tras pull, vuelve a desplegar.
+
+Las URLs limpias (`/`, `/tracker.html`) funcionan cuando el directorio raíz del proyecto en Vercel es **`apps/web`**.
 
 ## Railway (API)
 
