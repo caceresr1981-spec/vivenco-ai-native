@@ -1,0 +1,98 @@
+window.__TRACKER_PROJECTS__ = {
+  "updatedAt": "2026-03-27",
+  "projects": [
+    {
+      "id": "demo-erp-01",
+      "name": "Módulo inventario y compras",
+      "client": "Retail Demo SA",
+      "system": "ERP",
+      "status": "En desarrollo",
+      "summary": "Automatización de órdenes de compra e integración con proveedores.",
+      "activities": [
+        {
+          "title": "Modelo de datos y reglas de negocio",
+          "hours": 24,
+          "assignee": "Equipo A",
+          "inProgress": true
+        },
+        {
+          "title": "API de integración proveedores",
+          "hours": 18,
+          "assignee": "Equipo A",
+          "inProgress": true
+        },
+        {
+          "title": "Pantallas de aprobación BPM",
+          "hours": 12,
+          "assignee": "Equipo B",
+          "inProgress": false
+        }
+      ],
+      "milestones": [
+        { "title": "Demo interna", "date": "2026-04-10" },
+        { "title": "Inicio UAT cliente", "date": "2026-04-22" },
+        { "title": "Go-live piloto", "date": "2026-05-15" }
+      ]
+    },
+    {
+      "id": "demo-crm-02",
+      "name": "Pipeline y automatización comercial",
+      "client": "Seguros Demo",
+      "system": "CRM",
+      "status": "UAT",
+      "summary": "Seguimiento de oportunidades y secuencias de email.",
+      "activities": [
+        {
+          "title": "Ajustes post feedback UAT",
+          "hours": 6,
+          "assignee": "Equipo B",
+          "inProgress": true
+        }
+      ],
+      "milestones": [
+        { "title": "Cierre UAT", "date": "2026-03-30" },
+        { "title": "Producción", "date": "2026-04-05" }
+      ]
+    },
+    {
+      "id": "oms-wms-mvp",
+      "name": "OMS + WMS — Panel operativo MVP",
+      "client": "Retail / Operaciones (demo)",
+      "system": "OMS + WMS",
+      "status": "En desarrollo",
+      "summary": "Monorepo Node 20: API Fastify + Zod + PostgreSQL (Railway/Docker) y web Next.js App Router con proxy mismo origen (Vercel). Maestro de productos paginado, inventario y movimientos WMS, kardex con filtros y CSV, pedidos por canal (Mercado Libre / Tiendanube) con ingestión y estados, rentabilidad y KPIs, exportación de facturación pendiente y conciliación pedido-factura, integraciones mock (publish/sync). Health de API y de base; auth opcional por cookie con APP_PASSWORD.",
+      "activities": [
+        {
+          "title": "Persistencia Postgres, migraciones y health /health/db",
+          "hours": 16,
+          "assignee": "Equipo A",
+          "inProgress": true
+        },
+        {
+          "title": "Módulos web: inventario, kardex, pedidos, rentabilidad, reportes, facturación, integraciones",
+          "hours": 32,
+          "assignee": "Equipo A",
+          "inProgress": true
+        },
+        {
+          "title": "Proxy CORS, despliegue API (Railway) y web (Vercel), variables DATABASE_URL / BACKEND_URL",
+          "hours": 12,
+          "assignee": "Equipo B",
+          "inProgress": true
+        },
+        {
+          "title": "Auth MVP (middleware, login/logout) y checklist UAT cliente",
+          "hours": 8,
+          "assignee": "Equipo B",
+          "inProgress": false
+        }
+      ],
+      "milestones": [
+        { "title": "DB estable y panel end-to-end en staging", "date": "2026-04-01" },
+        { "title": "UAT funcional (stock, pedidos, reportes)", "date": "2026-04-18" },
+        { "title": "Go-live piloto OMS+WMS", "date": "2026-05-10" }
+      ]
+    }
+  ]
+}
+

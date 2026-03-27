@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('apps/web/data/projects.json','utf8')); JSON.parse(require('fs').readFileSync('apps/web/data/uat.json','utf8'));"
+      - name: Sync script
+        run: node scripts/sync-tracker-data.mjs
+      - name: API install
+        run: cd apps/api && npm ci

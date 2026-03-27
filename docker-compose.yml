@@ -1,0 +1,21 @@
+# Desarrollo local: web estática + API que lee/escribe apps/web/data
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      DATA_DIR: /data
+      TRACKER_API_TOKEN: ${TRACKER_API_TOKEN:-dev-local-token}
+      PORT: "3001"
+    volumes:
+      - ./apps/web/data:/data
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./apps/web:/usr/share/nginx/html:ro

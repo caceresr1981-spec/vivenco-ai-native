@@ -1,0 +1,9 @@
+{
+  "name": "ai-native-dev-landing",
+  "private": true,
+  "description": "Landing + tracker interno (Vercel web / Railway API)",
+  "scripts": {
+    "sync": "node scripts/sync-tracker-data.mjs",
+    "api": "node apps/api/src/index.js"
+  }
+}

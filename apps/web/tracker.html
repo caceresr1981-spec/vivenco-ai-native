@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proyectos activos | VIVENCO AI-Native</title>
+  <meta name="description" content="Listado de desarrollos por cliente. Abre cada proyecto para ver detalle y UAT." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-tracker page-tracker-list">
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
+      <nav class="nav">
+        <a href="index.html#soluciones">Soluciones</a>
+        <a href="comparison.html">AI-Native vs Tradicional</a>
+        <a href="tracker.html" aria-current="page">Proyectos</a>
+        <a href="index.html#demos">Demos</a>
+        <a href="index.html#casos">Casos de uso</a>
+        <a href="index.html#ofertas">Ofertas</a>
+      </nav>
+      <div class="header-ctas">
+        <a href="index.html#diagnostico" class="btn btn-ghost">Diagnóstico gratuito</a>
+        <a href="index.html#agendar" class="btn btn-primary">Agendar reunión</a>
+      </div>
+      <button class="menu-toggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero hero-tracker hero-tracker-list">
+      <div class="container hero-inner">
+        <div class="hero-badge-row">
+          <p class="hero-badge">Tracking interno</p>
+          <div class="tracker-settings-wrap">
+            <button
+              type="button"
+              id="tracker-settings-toggle"
+              class="tracker-gear-btn"
+              aria-expanded="false"
+              aria-controls="tracker-settings-panel"
+              title="Ajustes: vincular JSON en disco"
+            >
+              <svg class="tracker-gear-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path
+                  d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <div id="tracker-settings-panel" class="tracker-settings-panel" hidden role="region" aria-label="Ajustes de archivos JSON">
+              <p class="tracker-settings-paths">
+                Vincula exactamente estos archivos (navega a la carpeta <code>data</code>):<br />
+                <code class="tracker-path-line">…\ai-native-dev-landing\apps\web\data\projects.json</code><br />
+                <code class="tracker-path-line">…\ai-native-dev-landing\apps\web\data\uat.json</code>
+              </p>
+              <p id="tracker-settings-msg" class="tracker-settings-msg" aria-live="polite"></p>
+              <div class="tracker-settings-group">
+                <h3 class="tracker-settings-heading">projects.json</h3>
+                <div class="tracker-settings-btns">
+                  <button type="button" class="btn btn-secondary btn-sm" id="link-projects-json">Vincular JSON</button>
+                  <button type="button" class="btn btn-outline btn-sm" id="download-projects-json">Descargar JSON</button>
+                </div>
+              </div>
+              <div class="tracker-settings-group">
+                <h3 class="tracker-settings-heading">uat.json</h3>
+                <div class="tracker-settings-btns">
+                  <button type="button" class="btn btn-secondary btn-sm" id="link-uat-json">Vincular JSON</button>
+                  <button type="button" class="btn btn-outline btn-sm" id="download-uat-json">Descargar JSON</button>
+                </div>
+              </div>
+              <p class="tracker-settings-note">
+                Con la <strong>API</strong> configurada en <code>config.js</code>, los cambios van al servidor. Sin API, vincula los JSON y usa <code>scripts/sync-tracker-data.ps1</code> para regenerar <code>.data.js</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+        <h1 class="hero-title">Proyectos activos</h1>
+        <p class="hero-subtitle">
+          Elige un proyecto para ver la ficha completa: resumen, actividades con horas, milestones y UAT. Los datos se cargan desde <code>data/*.data.js</code> o vía servidor con los <code>.json</code>.
+        </p>
+        <p id="tracker-meta" class="tracker-meta"></p>
+      </div>
+      <div class="hero-bg"></div>
+    </section>
+
+    <section class="section tracker-section tracker-section-only">
+      <div class="container">
+        <div id="tracker-projects" class="tracker-grid" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© VIVENCO AI‑Native. Uso interno de seguimiento.</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="tracker-api.js"></script>
+  <script src="data/projects.data.js"></script>
+  <script src="data/uat.data.js"></script>
+  <script src="tracker-shared.js"></script>
+  <script src="json-disk-sync.js"></script>
+  <script src="main.js"></script>
+  <script src="tracker.js"></script>
+  <script src="tracker-settings.js"></script>
+</body>
+</html>

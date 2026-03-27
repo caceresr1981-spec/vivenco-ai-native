@@ -1,0 +1,161 @@
+{
+  "updatedAt": "2026-03-28",
+  "items": [
+    {
+      "id": "uat-001",
+      "projectId": "demo-erp-01",
+      "title": "OC: flujo completo desde solicitud hasta aprobación",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "Validar límites por centro de costo.",
+      "accionesTester": "",
+      "fechaCreacion": "2026-03-01",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "OC: flujo completo desde solicitud hasta aprobación"
+    },
+    {
+      "id": "uat-002",
+      "projectId": "demo-erp-01",
+      "title": "Conciliación de recepción vs factura proveedor",
+      "status": "En prueba",
+      "priority": "Media",
+      "descripcionTecnica": "",
+      "accionesTester": "",
+      "fechaCreacion": "2026-03-01",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Conciliación de recepción vs factura proveedor"
+    },
+    {
+      "id": "uat-003",
+      "projectId": "demo-crm-02",
+      "title": "Secuencia de emails: alta de lead a cita agendada",
+      "status": "Bloqueado",
+      "priority": "Alta",
+      "descripcionTecnica": "Esperando credenciales SMTP del cliente.",
+      "accionesTester": "",
+      "fechaCreacion": "2026-03-01",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Secuencia de emails: alta de lead a cita agendada"
+    },
+    {
+      "id": "uat-004",
+      "projectId": "demo-crm-02",
+      "title": "Reporte de embudo por ejecutivo",
+      "status": "Aprobado",
+      "priority": "Baja",
+      "descripcionTecnica": "",
+      "accionesTester": "",
+      "fechaCreacion": "2026-03-01",
+      "fechaFinalizacion": "2026-03-15",
+      "Descripción concisa del test case": "Reporte de embudo por ejecutivo"
+    },
+    {
+      "id": "uat-005",
+      "projectId": "oms-wms-mvp",
+      "title": "Infraestructura: health API, health DB y Postgres (Railway)",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "Endpoints: GET /health (API), GET /health/db (postgres opcional con ping). En el cliente web todo vía mismo origen: /api-proxy/health y /api-proxy/health/db. Criterio de éxito: health 200; health/db con ok:true y postgres:true cuando DATABASE_URL está en el servicio API; ping ok con SELECT 1. En Railway: variable DATABASE_URL en el servicio que corre la API, mismo proyecto/red que Postgres; pre-deploy migraciones sin fallar por ENOENT. Sin DATABASE_URL el API opera en memoria: datos no persisten tras reinicio.",
+      "accionesTester": "1) Abrir en el navegador (o curl) la URL del sitio + /api-proxy/health y /api-proxy/health/db. 2) Confirmar JSON y códigos 200. 3) En Railway, verificar DATABASE_URL y logs de arranque sin error de migración. 4) Anotar evidencia (captura o respuesta) y resultado. 5) Si falla DB, marcar Bloqueado y nota en descripcionTecnica.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Validar que la API responde y que Postgres está conectado y migrado."
+    },
+    {
+      "id": "uat-006",
+      "projectId": "oms-wms-mvp",
+      "title": "WMS: movimientos de stock y tabla de saldos",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "API: POST /inventory/movements con tipos soportados (ingreso, devolución, transferencia, reserva, picking, ajuste, descarte) según reglas de ubicación origen/destino. GET /inventory/stock paginado con filtros sku/warehouse. En Postgres: FK a products(sku) y locations(id) para stock_balances nuevos.",
+      "accionesTester": "1) Ir a /inventario. 2) Registrar un ingreso con SKU y ubicaciones válidas (ej. demo del catálogo). 3) Confirmar mensaje de éxito y refrescar tabla de saldos. 4) Opcional: repetir transferencia o reserva y verificar cantidades. 5) Si falla por FK, documentar SKU/ubicación usados.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Registrar movimientos y comprobar saldos en pantalla y API."
+    },
+    {
+      "id": "uat-007",
+      "projectId": "oms-wms-mvp",
+      "title": "Kardex: filtros, paginación y exportación CSV",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "API: GET /inventory/kardex/:sku?warehouseId, movementType, from, to, limit, offset → { items, total }, orden descendente por fecha. UI: /kardex con filtros, paginación y CSV de la página actual.",
+      "accionesTester": "1) Ir a /kardex e ingresar un SKU con movimientos. 2) Aplicar filtros (depósito, tipo, fechas) y paginar. 3) Descargar CSV y abrir: columnas legibles y coincidencia con filas visibles. 4) Comparar total con el indicado en pantalla.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Consultar historial por SKU, filtrar y exportar CSV."
+    },
+    {
+      "id": "uat-008",
+      "projectId": "oms-wms-mvp",
+      "title": "OMS: pedidos — ingestión, búsqueda y actualización de estado",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "API: POST /orders/ingest, GET /orders?search&limit&offset, PATCH /orders/:id { status }. Líneas deben usar SKUs existentes en el maestro de productos.",
+      "accionesTester": "1) Abrir /pedidos. 2) Ingerir un pedido demo con SKU conocido. 3) Buscar por id o pedido externo en el listado. 4) Cambiar estado desde el desplegable y verificar que lista refleje el cambio. 5) Intentar SKU inexistente y registrar fallo esperado si aplica.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Crear pedido, listarlo y cambiar estado operativo."
+    },
+    {
+      "id": "uat-009",
+      "projectId": "oms-wms-mvp",
+      "title": "Rentabilidad: márgenes por pedido y consolidado global",
+      "status": "Pendiente",
+      "priority": "Alta",
+      "descripcionTecnica": "Motor usa pedidos en estado entregado o despachado para agregados. GET /profitability/global y GET /profitability/order/:orderId. Coherencia con costos/comisiones por canal y SKU desde catálogo.",
+      "accionesTester": "1) Tener al menos un pedido en entregado o despachado. 2) Ir a /rentabilidad y revisar tarjetas globales. 3) Pegar ID interno del pedido en consulta por pedido y validar cifras razonables. 4) Opcional: comparar con panel home (KPIs) si el mismo backend.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Verificar rentabilidad global y detalle por ORD-..."
+    },
+    {
+      "id": "uat-010",
+      "projectId": "oms-wms-mvp",
+      "title": "Reportes: KPI por ventana diaria / semanal / mensual",
+      "status": "Pendiente",
+      "priority": "Media",
+      "descripcionTecnica": "GET /reports/kpi?period=daily|weekly|monthly. Incluye financial, marketing (top ventas), calidad/logística y replenishment (proxy).",
+      "accionesTester": "1) Ir a /reportes. 2) Cambiar período y verificar que no haya error. 3) Revisar top ventas y reclamos según datos cargados. 4) Anotar si algún bloque queda vacío por falta de datos (esperado).",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Validar reporte KPI con distintos períodos."
+    },
+    {
+      "id": "uat-011",
+      "projectId": "oms-wms-mvp",
+      "title": "Facturación: export CSV pendientes y conciliación pedido–factura",
+      "status": "Pendiente",
+      "priority": "Media",
+      "descripcionTecnica": "GET /billing/export.csv (text/csv; marca exportación en backend). POST /billing/reconcile { orderId, externalInvoiceRef } para cerrar facturación del pedido.",
+      "accionesTester": "1) Abrir /facturacion. 2) Descargar CSV y verificar columnas y al menos un pedido pendiente si hay datos. 3) Con un orderId válido, ejecutar conciliación con referencia externa ficticia. 4) Confirmar que no devuelve error 4xx/5xx o documentar comportamiento.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Exportar pendientes y marcar facturado con referencia externa."
+    },
+    {
+      "id": "uat-012",
+      "projectId": "oms-wms-mvp",
+      "title": "Integraciones: vínculo listing ↔ SKU y sync mock",
+      "status": "Pendiente",
+      "priority": "Baja",
+      "descripcionTecnica": "POST /channels/publish { sku, channel, externalId }; POST /channels/sync/:sku devuelve payload mock con precios e IDs por canal (sin llamada real a ML/TN).",
+      "accionesTester": "1) Ir a /integraciones. 2) Guardar vínculo para un SKU existente. 3) Ejecutar sync mock y revisar JSON. 4) Confirmar que errores de SKU inexistente son claros.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Probar publicación de canal y sincronización simulada."
+    },
+    {
+      "id": "uat-013",
+      "projectId": "oms-wms-mvp",
+      "title": "Seguridad: acceso con APP_PASSWORD (opcional)",
+      "status": "Pendiente",
+      "priority": "Baja",
+      "descripcionTecnica": "Middleware Next.js: si APP_PASSWORD está definido, rutas protegidas; cookie HttpOnly oms_auth; rutas /login y /api/auth/* exentas. Sin APP_PASSWORD no debe bloquear.",
+      "accionesTester": "1) Solo si APP_PASSWORD está definido en Vercel: abrir sitio en incógnito y verificar redirección a /login. 2) Ingresar contraseña correcta y acceder al panel y a /api-proxy. 3) Usar Salir y verificar que vuelva a pedir login. 4) Si no hay APP_PASSWORD, marcar N/A en notas y dejar como omitido.",
+      "fechaCreacion": "2026-03-28",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Validar login opcional y cierre de sesión."
+    }
+  ]
+}

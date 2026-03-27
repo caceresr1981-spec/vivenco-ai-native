@@ -1,0 +1,9 @@
+*.rar
+*.zip
+
+node_modules/
+apps/api/node_modules/
+.env
+.env.*
+*.log
+.DS_Store

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proyecto | VIVENCO AI-Native</title>
+  <meta name="description" content="Detalle de proyecto: actividades, milestones y UAT." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-project-detail">
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
+      <nav class="nav">
+        <a href="index.html#soluciones">Soluciones</a>
+        <a href="comparison.html">AI-Native vs Tradicional</a>
+        <a href="tracker.html">Proyectos</a>
+        <a href="index.html#demos">Demos</a>
+        <a href="index.html#casos">Casos de uso</a>
+        <a href="index.html#ofertas">Ofertas</a>
+      </nav>
+      <div class="header-ctas">
+        <a href="index.html#diagnostico" class="btn btn-ghost">Diagnóstico gratuito</a>
+        <a href="index.html#agendar" class="btn btn-primary">Agendar reunión</a>
+      </div>
+      <button class="menu-toggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="project-detail-page">
+    <div class="container">
+      <nav id="project-section-nav" class="project-toc" aria-label="Secciones" hidden>
+        <a href="#resumen">Resumen</a>
+        <a href="#actividades">Actividades</a>
+        <a href="#milestones">Milestones</a>
+        <a href="#uat">UAT</a>
+      </nav>
+      <div id="project-detail-root" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <div id="uat-case-modal" class="modal uat-case-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="uat-case-modal-title">
+    <div class="modal-backdrop" id="uat-case-modal-backdrop"></div>
+    <div class="modal-content modal-content-wide uat-case-modal-content">
+      <button type="button" class="modal-close" id="uat-case-modal-close" aria-label="Cerrar">&times;</button>
+      <h2 id="uat-case-modal-title">Caso UAT</h2>
+      <div id="uat-case-modal-body"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© VIVENCO AI‑Native. Uso interno de seguimiento.</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="tracker-api.js"></script>
+  <script src="data/projects.data.js"></script>
+  <script src="data/uat.data.js"></script>
+  <script src="tracker-shared.js"></script>
+  <script src="json-disk-sync.js"></script>
+  <script src="main.js"></script>
+  <script src="project-detail.js"></script>
+</body>
+</html>
