@@ -82,6 +82,15 @@
     if (el) el.textContent = message || '';
   }
 
+  /** Mensaje visible dentro del modal (el estado bajo la tabla queda tapado por el modal). */
+  function setModalFeedback(message, isError) {
+    var el = document.getElementById('uat-modal-feedback');
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('uat-modal-feedback--error', !!isError);
+    el.classList.toggle('uat-modal-feedback--ok', !isError && !!message);
+  }
+
   function buildUatToolbar() {
     return (
       '<p id="uat-sync-status" class="uat-sync-status" aria-live="polite"></p>' +
@@ -231,6 +240,7 @@
       '</label>' +
       '</div>' +
       '</div>' +
+      '<p id="uat-modal-feedback" class="uat-modal-feedback" role="status" aria-live="polite"></p>' +
       '<div class="uat-modal-actions">' +
       '<button type="button" class="btn btn-primary" id="uat-modal-apply">Aplicar cambios</button>' +
       '<button type="button" class="btn btn-outline" id="uat-modal-cancel">Cerrar</button>' +
@@ -255,7 +265,11 @@
       true
     );
 
-    document.getElementById('uat-modal-apply').addEventListener('click', applyUatModal);
+    document.getElementById('uat-modal-apply').addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      applyUatModal();
+    });
     document.getElementById('uat-modal-cancel').addEventListener('click', function () {
       closeUatModal(false);
     });
@@ -282,6 +296,14 @@
     });
     if (idx < 0) return;
 
+    var applyBtn = document.getElementById('uat-modal-apply');
+    var applyLabel = applyBtn ? applyBtn.textContent : '';
+    if (applyBtn) {
+      applyBtn.disabled = true;
+      applyBtn.textContent = 'Guardando…';
+    }
+    setModalFeedback('Guardando cambios…', false);
+
     var prev = state.fullUat.items[idx];
     var updated = {
       id: prev.id,
@@ -303,14 +325,19 @@
 
     persistUatToDisk()
       .then(function (r) {
+        if (applyBtn) {
+          applyBtn.disabled = false;
+          applyBtn.textContent = applyLabel;
+        }
         if (r && r.ok) {
           uatModalDirty = false;
+          setModalFeedback('', false);
           if (r.source === 'api') {
-            setSyncStatus(
+            var msgApi =
               r.syncMode === 'uat_only'
                 ? 'UAT guardado en el servidor (solo uat.json).'
-                : 'Sincronizado: proyectos + UAT en el servidor (una sola petición).'
-            );
+                : 'Sincronizado: proyectos + UAT en el servidor (una sola petición).';
+            setSyncStatus(msgApi);
             if (window.__TRACKER_UAT__ && window.__PROJECT_UAT_STATE__ && window.__PROJECT_UAT_STATE__.fullUat) {
               window.__TRACKER_UAT__ = JSON.parse(JSON.stringify(window.__PROJECT_UAT_STATE__.fullUat));
             }
@@ -327,29 +354,34 @@
         } else {
           state.fullUat = fullUatBackup;
           refreshUatRow(id);
+          var errMsg = 'No se pudo guardar. Cambios revertidos.';
           if (r && r.reason === 'no_handle') {
-            setSyncStatus(
-              'No se guardó: vincula uat.json en Proyectos (engranaje) o configura la API en config.js. La fila se revirtió al último guardado.'
-            );
+            errMsg =
+              'No se guardó: vincula uat.json en Proyectos (engranaje) o configura la API en config.js. Los cambios se revirtieron.';
           } else if (r && r.reason === 'permission_denied') {
-            setSyncStatus('Permiso denegado al escribir. La fila se revirtió.');
+            errMsg = 'Permiso denegado al escribir en disco. Cambios revertidos.';
           } else if (r && r.reason === 'unsupported') {
-            setSyncStatus(
-              'No se puede escribir en disco desde este navegador. Configura la API o usa Chrome/Edge. Cambios revertidos.'
-            );
+            errMsg =
+              'Este navegador no puede guardar en disco. Configura la API en config.js o usa Chrome/Edge y vincula los JSON.';
           } else if (r && r.reason === 'api_unauthorized') {
-            setSyncStatus('API: token inválido. Cambios revertidos.');
+            errMsg = 'API: token inválido o ausente. Revisa config.js y Railway.';
           } else if (r && r.reason === 'api_failed') {
-            setSyncStatus('No se pudo guardar en la API. Cambios revertidos; revisa red y CORS.');
-          } else {
-            setSyncStatus('No se pudo guardar. Cambios revertidos.');
+            errMsg = 'Error al guardar en la API. Revisa red, CORS y que el servicio esté activo.';
           }
+          setSyncStatus(errMsg);
+          setModalFeedback(errMsg, true);
         }
       })
       .catch(function () {
+        if (applyBtn) {
+          applyBtn.disabled = false;
+          applyBtn.textContent = applyLabel;
+        }
         state.fullUat = fullUatBackup;
         refreshUatRow(id);
-        setSyncStatus('Error al guardar. Cambios revertidos; revisa la consola o la red.');
+        var errMsg = 'Error al guardar. Cambios revertidos; revisa la consola o la red.';
+        setSyncStatus(errMsg);
+        setModalFeedback(errMsg, true);
       });
   }
 
@@ -435,6 +467,7 @@
       }
     }
     uatModalDirty = false;
+    setModalFeedback('', false);
     var modal = document.getElementById('uat-case-modal');
     if (!modal) return;
     modal.setAttribute('aria-hidden', 'true');
