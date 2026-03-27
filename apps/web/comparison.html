@@ -44,6 +44,11 @@
           <a href="index.html#diagnostico" class="btn btn-primary btn-lg">Solicitar diagnóstico gratuito</a>
           <a href="#comparador" class="btn btn-secondary btn-lg">Ver comparador</a>
         </div>
+        <p class="hero-anchor-links">
+          <a href="#impacto-cliente">Impacto esperado para el cliente</a>
+          <span class="hero-anchor-sep" aria-hidden="true">·</span>
+          <a href="#comparador">Comparador por tipo de desarrollo</a>
+        </p>
         <div class="ribbon">
           <span class="ribbon-dot"></span>
           <span><strong>Pitch:</strong> “Entregamos resultados de negocio con ciclos de desarrollo más cortos, menos retrabajo y mayor claridad de alcance.”</span>
@@ -87,7 +92,7 @@
           </article>
         </div>
 
-        <div class="impact-bars">
+        <div class="impact-bars" id="impacto-cliente">
           <div class="impact-card">
             <div class="impact-top">
               <h3>Impacto esperado para el cliente</h3>
@@ -98,7 +103,13 @@
               <div class="bar-label">Velocidad de entrega</div>
               <div class="bar">
                 <div class="bar-fill bar-fill--ai" style="width: 88%"><span>AI‑Native</span></div>
-                <div class="bar-fill bar-fill--trad" style="width: 58%"><span>Tradicional</span></div>
+                <div
+                  class="bar-fill bar-fill--trad bar-fill-trad--pending"
+                  style="width: 0%"
+                  data-bar-w="58"
+                >
+                  <span>Tradicional</span>
+                </div>
               </div>
             </div>
 
@@ -106,7 +117,13 @@
               <div class="bar-label">Reducción de retrabajo</div>
               <div class="bar">
                 <div class="bar-fill bar-fill--ai" style="width: 82%"><span>AI‑Native</span></div>
-                <div class="bar-fill bar-fill--trad" style="width: 52%"><span>Tradicional</span></div>
+                <div
+                  class="bar-fill bar-fill--trad bar-fill-trad--pending"
+                  style="width: 0%"
+                  data-bar-w="52"
+                >
+                  <span>Tradicional</span>
+                </div>
               </div>
             </div>
 
@@ -114,7 +131,13 @@
               <div class="bar-label">Claridad de alcance</div>
               <div class="bar">
                 <div class="bar-fill bar-fill--ai" style="width: 86%"><span>AI‑Native</span></div>
-                <div class="bar-fill bar-fill--trad" style="width: 55%"><span>Tradicional</span></div>
+                <div
+                  class="bar-fill bar-fill--trad bar-fill-trad--pending"
+                  style="width: 0%"
+                  data-bar-w="55"
+                >
+                  <span>Tradicional</span>
+                </div>
               </div>
             </div>
 
@@ -122,7 +145,13 @@
               <div class="bar-label">Time‑to‑ROI</div>
               <div class="bar">
                 <div class="bar-fill bar-fill--ai" style="width: 84%"><span>AI‑Native</span></div>
-                <div class="bar-fill bar-fill--trad" style="width: 50%"><span>Tradicional</span></div>
+                <div
+                  class="bar-fill bar-fill--trad bar-fill-trad--pending"
+                  style="width: 0%"
+                  data-bar-w="50"
+                >
+                  <span>Tradicional</span>
+                </div>
               </div>
             </div>
 
@@ -174,7 +203,7 @@
                 <span class="chip chip-warn">Cambios caros</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 58"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="58"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -211,7 +240,7 @@
                 <span class="chip chip-warn">Menor adopción</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 55"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="55"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -248,7 +277,7 @@
                 <span class="chip chip-warn">Poca visibilidad</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 56"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="56"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -285,7 +314,7 @@
                 <span class="chip chip-warn">Costos invisibles</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 54"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="54"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -322,7 +351,7 @@
                 <span class="chip chip-warn">Menos feedback</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 57"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="57"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -359,7 +388,7 @@
                 <span class="chip chip-warn">Datos “a mano”</span>
               </div>
               <div class="spark">
-                <div class="spark-trad" style="--v: 53"></div>
+                <div class="spark-trad spark-fill-pending" style="--v: 0" data-spark-v="53"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -395,6 +424,7 @@
     </div>
   </footer>
 
+  <script src="comparison-sparks.js"></script>
   <script src="main.js"></script>
 </body>
 </html>

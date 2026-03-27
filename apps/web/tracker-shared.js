@@ -1,6 +1,29 @@
 (function (global) {
   'use strict';
 
+  var LOCAL_UAT_KEY = 'vivenco-tracker-uat';
+  var LOCAL_UAT_TS_KEY = 'vivenco-tracker-uat-ts';
+
+  /** Si hay copia local más reciente que el JSON cargado, úsala (sin API ni archivos vinculados). */
+  function mergeUatFromLocalStorage(uat) {
+    if (!uat) return uat;
+    try {
+      var raw = global.localStorage.getItem(LOCAL_UAT_KEY);
+      if (!raw) return uat;
+      var local = JSON.parse(raw);
+      if (!local || !local.items) return uat;
+      var localTs = parseInt(global.localStorage.getItem(LOCAL_UAT_TS_KEY) || '0', 10);
+      var remoteTs = 0;
+      if (uat.updatedAt) {
+        remoteTs = new Date(uat.updatedAt + 'T12:00:00').getTime();
+      }
+      if (localTs > remoteTs) {
+        return local;
+      }
+    } catch (e) {}
+    return uat;
+  }
+
   var TrackerShared = {
     escapeHtml: function (s) {
       if (s == null) return '';
@@ -42,11 +65,12 @@
       if (TA && TA.isConfigured()) {
         return Promise.all([TA.fetchJson('projects'), TA.fetchJson('uat')]).then(function (pair) {
           global.__TRACKER_PROJECTS__ = pair[0];
-          global.__TRACKER_UAT__ = pair[1];
-          return pair;
+          global.__TRACKER_UAT__ = mergeUatFromLocalStorage(pair[1]);
+          return [pair[0], global.__TRACKER_UAT__];
         });
       }
       if (global.__TRACKER_PROJECTS__ && global.__TRACKER_UAT__) {
+        global.__TRACKER_UAT__ = mergeUatFromLocalStorage(global.__TRACKER_UAT__);
         return Promise.resolve([global.__TRACKER_PROJECTS__, global.__TRACKER_UAT__]);
       }
       return Promise.all([
@@ -60,8 +84,8 @@
         })
       ]).then(function (pair) {
         global.__TRACKER_PROJECTS__ = pair[0];
-        global.__TRACKER_UAT__ = pair[1];
-        return pair;
+        global.__TRACKER_UAT__ = mergeUatFromLocalStorage(pair[1]);
+        return [pair[0], global.__TRACKER_UAT__];
       });
     }
   };

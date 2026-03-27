@@ -862,6 +862,29 @@ body {
   flex: 0 0 auto;
 }
 
+.hero-anchor-links {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.hero-anchor-links a {
+  color: var(--teal);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.hero-anchor-links a:hover {
+  color: var(--accent);
+}
+
+.hero-anchor-sep {
+  margin: 0 0.5rem;
+  opacity: 0.55;
+}
+
 .compare-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1009,6 +1032,13 @@ body {
   background: rgba(234, 88, 12, 0.18);
   border: 1px solid rgba(234, 88, 12, 0.30);
   color: var(--accent);
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill--trad {
+    transition: none;
+  }
 }
 
 .impact-note {
@@ -1132,6 +1162,17 @@ body {
 
 .spark-trad {
   background: linear-gradient(90deg, rgba(234, 88, 12, 0.70), rgba(234, 88, 12, 0.18));
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spark-trad.spark-fill-pending {
+  --v: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark-trad {
+    transition: none;
+  }
 }
 
 .benefit {

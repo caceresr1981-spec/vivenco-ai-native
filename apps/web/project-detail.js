@@ -104,7 +104,7 @@
       '</label>' +
       '<button type="button" class="btn btn-outline btn-sm" id="uat-export-backup">Exportar uat.json (respaldo)</button>' +
       '</div>' +
-      '<p class="uat-save-hint">Con la API en <code>config.js</code>, «Aplicar cambios» sincroniza <strong>proyectos + UAT</strong> en el servidor. En local (engranaje), se intentan guardar ambos JSON si están vinculados. La exportación es solo copia manual de respaldo.</p>'
+      '<p class="uat-save-hint">Sin API ni archivos vinculados, «Aplicar cambios» guarda en <strong>este navegador</strong> (localStorage) y al recargar se recupera la copia más reciente. Con la API en <code>config.js</code> se sincroniza en el servidor; con el engranaje se escriben los JSON vinculados. La exportación es copia manual de respaldo.</p>'
     );
   }
 
@@ -347,6 +347,10 @@
             setSyncStatus(
               'UAT guardado en disco. Si también quieres actualizar projects.json, vincúlalo en Proyectos (engranaje) o usa la API.'
             );
+          } else if (r.source === 'localStorage') {
+            setSyncStatus(
+              'UAT guardado en este navegador (localStorage). Para el repo u otro equipo, configura la API o exporta JSON.'
+            );
           } else {
             setSyncStatus('Cambios guardados.');
           }
@@ -367,6 +371,9 @@
             errMsg = 'API: token inválido o ausente. Revisa config.js y Railway.';
           } else if (r && r.reason === 'api_failed') {
             errMsg = 'Error al guardar en la API. Revisa red, CORS y que el servicio esté activo.';
+          } else if (r && r.reason === 'no_storage') {
+            errMsg =
+              'No se pudo guardar ni en disco ni en el almacenamiento del navegador (modo privado o bloqueado).';
           }
           setSyncStatus(errMsg);
           setModalFeedback(errMsg, true);
@@ -400,6 +407,20 @@
     URL.revokeObjectURL(url);
   }
 
+  function saveUatToLocalStorage() {
+    var state = getState();
+    if (!state || !state.fullUat) {
+      return Promise.resolve({ ok: false, reason: 'no_state' });
+    }
+    try {
+      localStorage.setItem('vivenco-tracker-uat', JSON.stringify(state.fullUat));
+      localStorage.setItem('vivenco-tracker-uat-ts', String(Date.now()));
+      return Promise.resolve({ ok: true, source: 'localStorage' });
+    } catch (e) {
+      return Promise.resolve({ ok: false, reason: 'no_storage' });
+    }
+  }
+
   function persistUatToDisk() {
     var state = getState();
     if (!state || !state.fullUat) {
@@ -416,7 +437,7 @@
           if (r && r.reason === 'unauthorized') {
             return { ok: false, reason: 'api_unauthorized' };
           }
-          return { ok: false, reason: 'api_failed' };
+          return saveUatToLocalStorage();
         });
       }
       if (window.TrackerApi.putJson) {
@@ -425,7 +446,7 @@
           if (r && r.reason === 'unauthorized') {
             return { ok: false, reason: 'api_unauthorized' };
           }
-          return { ok: false, reason: 'api_failed' };
+          return saveUatToLocalStorage();
         });
       }
     }
@@ -434,7 +455,12 @@
     var J = window.JsonDiskSync;
     if (J && J.supported && J.writeJsonString) {
       return J.writeJsonString('uat', jsonUat).then(function (ru) {
-        if (!ru.ok) return ru;
+        if (!ru.ok) {
+          if (ru.reason === 'no_handle' || ru.reason === 'permission_denied') {
+            return saveUatToLocalStorage();
+          }
+          return ru;
+        }
         var pj = window.__TRACKER_PROJECTS__;
         if (!pj) return { ok: true, source: 'disk', wroteProjects: false };
         var jsonP = JSON.stringify(pj, null, 2);
@@ -450,17 +476,17 @@
     if (window.UatDiskSync && window.UatDiskSync.supported) {
       return window.UatDiskSync.writeJsonString(jsonUat).then(function (ru) {
         if (ru && ru.ok) return { ok: true, source: 'disk', wroteProjects: false };
-        return ru;
+        return saveUatToLocalStorage();
       });
     }
-    return Promise.resolve({ ok: false, reason: 'unsupported' });
+    return saveUatToLocalStorage();
   }
 
   function closeUatModal(forceClose) {
     if (forceClose !== true && uatModalDirty) {
       if (
         !window.confirm(
-          '¿Cerrar sin guardar? Los cambios solo se guardan al pulsar «Aplicar cambios» (y si la API o los archivos vinculados permiten escribir).'
+          '¿Cerrar sin guardar? Los cambios solo se aplican al pulsar «Aplicar cambios» (API, archivos vinculados o almacenamiento del navegador).'
         )
       ) {
         return;
