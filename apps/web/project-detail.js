@@ -9,6 +9,10 @@
   /** Clave exacta en uat.json (coincide con el nombre del campo en el archivo). */
   var KEY_DESC_CONCISA = 'Descripción concisa del test case';
 
+  /** True si el usuario editó el modal sin guardar con «Aplicar cambios». */
+  var uatModalDirty = false;
+  var uatBeforeUnloadBound = false;
+
   function getDescConcisa(it) {
     if (!it) return '';
     return it[KEY_DESC_CONCISA] || it.descripcionConcisa || '';
@@ -235,12 +239,31 @@
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
 
+    uatModalDirty = false;
+    body.addEventListener(
+      'input',
+      function () {
+        uatModalDirty = true;
+      },
+      true
+    );
+    body.addEventListener(
+      'change',
+      function () {
+        uatModalDirty = true;
+      },
+      true
+    );
+
     document.getElementById('uat-modal-apply').addEventListener('click', applyUatModal);
-    document.getElementById('uat-modal-cancel').addEventListener('click', closeUatModal);
+    document.getElementById('uat-modal-cancel').addEventListener('click', function () {
+      closeUatModal(false);
+    });
   }
 
   function readModalField(name) {
-    var el = document.querySelector('[data-modal-field="' + name + '"]');
+    var root = document.getElementById('uat-case-modal-body');
+    var el = root ? root.querySelector('[data-modal-field="' + name + '"]') : null;
     return el ? el.value.trim() : '';
   }
 
@@ -273,14 +296,21 @@
     };
     updated[KEY_DESC_CONCISA] = readModalField('descripcionConcisa');
 
+    var fullUatBackup = JSON.parse(JSON.stringify(state.fullUat));
     state.fullUat.items[idx] = updated;
+    state.fullUat.updatedAt = new Date().toISOString().slice(0, 10);
     refreshUatRow(id);
 
     persistUatToDisk()
       .then(function (r) {
         if (r && r.ok) {
+          uatModalDirty = false;
           if (r.source === 'api') {
-            setSyncStatus('Sincronizado: proyectos + UAT en el servidor (una sola petición).');
+            setSyncStatus(
+              r.syncMode === 'uat_only'
+                ? 'UAT guardado en el servidor (solo uat.json).'
+                : 'Sincronizado: proyectos + UAT en el servidor (una sola petición).'
+            );
             if (window.__TRACKER_UAT__ && window.__PROJECT_UAT_STATE__ && window.__PROJECT_UAT_STATE__.fullUat) {
               window.__TRACKER_UAT__ = JSON.parse(JSON.stringify(window.__PROJECT_UAT_STATE__.fullUat));
             }
@@ -293,32 +323,33 @@
           } else {
             setSyncStatus('Cambios guardados.');
           }
-        } else if (r && r.reason === 'no_handle') {
-          setSyncStatus(
-            'Sin permiso de escritura local: vincula uat.json y projects.json en Proyectos (engranaje), o configura la API en config.js. Usa «Exportar» solo si quieres una copia manual.'
-          );
-        } else if (r && r.reason === 'permission_denied') {
-          setSyncStatus('Permiso denegado al escribir. Vuelve a vincular los JSON o usa la API.');
-        } else if (r && r.reason === 'unsupported') {
-          setSyncStatus(
-            'Este navegador no permite escribir en disco. Configura la API o usa Chrome/Edge con archivos vinculados.'
-          );
-        } else if (r && r.reason === 'api_unauthorized') {
-          setSyncStatus('API: token inválido. Revisa __TRACKER_API_TOKEN__ en config.js o Railway.');
-        } else if (r && r.reason === 'no_projects') {
-          setSyncStatus('No hay datos de proyectos en memoria. Recarga la página o revisa la carga desde la API.');
-        } else if (r && r.reason === 'api_failed') {
-          setSyncStatus('No se pudo guardar en la API. Revisa red, CORS y que el servicio esté activo.');
+          closeUatModal(true);
         } else {
-          setSyncStatus(
-            'No se pudo guardar. Configura la API, vincula los JSON en Proyectos, o exporta manualmente con el botón de respaldo.'
-          );
+          state.fullUat = fullUatBackup;
+          refreshUatRow(id);
+          if (r && r.reason === 'no_handle') {
+            setSyncStatus(
+              'No se guardó: vincula uat.json en Proyectos (engranaje) o configura la API en config.js. La fila se revirtió al último guardado.'
+            );
+          } else if (r && r.reason === 'permission_denied') {
+            setSyncStatus('Permiso denegado al escribir. La fila se revirtió.');
+          } else if (r && r.reason === 'unsupported') {
+            setSyncStatus(
+              'No se puede escribir en disco desde este navegador. Configura la API o usa Chrome/Edge. Cambios revertidos.'
+            );
+          } else if (r && r.reason === 'api_unauthorized') {
+            setSyncStatus('API: token inválido. Cambios revertidos.');
+          } else if (r && r.reason === 'api_failed') {
+            setSyncStatus('No se pudo guardar en la API. Cambios revertidos; revisa red y CORS.');
+          } else {
+            setSyncStatus('No se pudo guardar. Cambios revertidos.');
+          }
         }
-        closeUatModal();
       })
       .catch(function () {
-        setSyncStatus('Error al guardar. Revisa la consola o la red; puedes usar «Exportar uat.json» como respaldo.');
-        closeUatModal();
+        state.fullUat = fullUatBackup;
+        refreshUatRow(id);
+        setSyncStatus('Error al guardar. Cambios revertidos; revisa la consola o la red.');
       });
   }
 
@@ -345,18 +376,26 @@
     state.fullUat.updatedAt = new Date().toISOString().slice(0, 10);
     var body = state.fullUat;
 
-    if (window.TrackerApi && window.TrackerApi.isConfigured() && window.TrackerApi.putSync) {
+    if (window.TrackerApi && window.TrackerApi.isConfigured()) {
       var projects = window.__TRACKER_PROJECTS__;
-      if (!projects) {
-        return Promise.resolve({ ok: false, reason: 'no_projects' });
+      if (projects && window.TrackerApi.putSync) {
+        return window.TrackerApi.putSync({ uat: body, projects: projects }).then(function (r) {
+          if (r && r.ok) return { ok: true, source: 'api' };
+          if (r && r.reason === 'unauthorized') {
+            return { ok: false, reason: 'api_unauthorized' };
+          }
+          return { ok: false, reason: 'api_failed' };
+        });
       }
-      return window.TrackerApi.putSync({ uat: body, projects: projects }).then(function (r) {
-        if (r && r.ok) return { ok: true, source: 'api' };
-        if (r && r.reason === 'unauthorized') {
-          return { ok: false, reason: 'api_unauthorized' };
-        }
-        return { ok: false, reason: 'api_failed' };
-      });
+      if (window.TrackerApi.putJson) {
+        return window.TrackerApi.putJson('uat', body).then(function (r) {
+          if (r && r.ok) return { ok: true, source: 'api', syncMode: 'uat_only' };
+          if (r && r.reason === 'unauthorized') {
+            return { ok: false, reason: 'api_unauthorized' };
+          }
+          return { ok: false, reason: 'api_failed' };
+        });
+      }
     }
 
     var jsonUat = JSON.stringify(body, null, 2);
@@ -385,7 +424,17 @@
     return Promise.resolve({ ok: false, reason: 'unsupported' });
   }
 
-  function closeUatModal() {
+  function closeUatModal(forceClose) {
+    if (forceClose !== true && uatModalDirty) {
+      if (
+        !window.confirm(
+          '¿Cerrar sin guardar? Los cambios solo se guardan al pulsar «Aplicar cambios» (y si la API o los archivos vinculados permiten escribir).'
+        )
+      ) {
+        return;
+      }
+    }
+    uatModalDirty = false;
     var modal = document.getElementById('uat-case-modal');
     if (!modal) return;
     modal.setAttribute('aria-hidden', 'true');
@@ -429,14 +478,24 @@
 
     var backdrop = document.getElementById('uat-case-modal-backdrop');
     var closeBtn = document.getElementById('uat-case-modal-close');
-    if (backdrop) backdrop.addEventListener('click', closeUatModal);
-    if (closeBtn) closeBtn.addEventListener('click', closeUatModal);
+    if (backdrop) backdrop.addEventListener('click', function () { closeUatModal(false); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { closeUatModal(false); });
 
     var modal = document.getElementById('uat-case-modal');
     if (modal) {
       modal.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-          closeUatModal();
+          closeUatModal(false);
+        }
+      });
+    }
+
+    if (!uatBeforeUnloadBound) {
+      uatBeforeUnloadBound = true;
+      window.addEventListener('beforeunload', function (e) {
+        if (uatModalDirty) {
+          e.preventDefault();
+          e.returnValue = '';
         }
       });
     }
