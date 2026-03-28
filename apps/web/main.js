@@ -34,10 +34,59 @@
 
   // Cerrar menú móvil al hacer clic en un enlace (si se añade menú desplegable)
   var menuToggle = document.querySelector('.menu-toggle');
+  var navEl = document.querySelector('.header .nav');
   if (menuToggle) {
     menuToggle.addEventListener('click', function () {
       var nav = document.querySelector('.nav');
       if (nav) nav.classList.toggle('is-open');
+    });
+  }
+
+  if (navEl) {
+    var hashLinks = navEl.querySelectorAll('a[href^="#"]');
+    var sectionIds = [];
+    hashLinks.forEach(function (a) {
+      var href = a.getAttribute('href');
+      if (href && href.length > 1) sectionIds.push(href.slice(1));
+    });
+    if (sectionIds.length) {
+      function updateNavActive() {
+        var headerH = 76;
+        var probe = window.scrollY + headerH + 48;
+        var current = null;
+        sectionIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          var top = el.getBoundingClientRect().top + window.scrollY;
+          if (probe >= top) current = id;
+        });
+        hashLinks.forEach(function (a) {
+          var h = a.getAttribute('href');
+          var id = h && h.length > 1 ? h.slice(1) : '';
+          a.classList.toggle('nav-link--active', id === current);
+        });
+      }
+      window.addEventListener('scroll', updateNavActive, { passive: true });
+      window.addEventListener('load', updateNavActive);
+      updateNavActive();
+    }
+    navEl.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        var nav = document.querySelector('.nav');
+        if (nav && nav.classList.contains('is-open')) nav.classList.remove('is-open');
+      });
+    });
+    navEl.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        window.setTimeout(function () {
+          var h = a.getAttribute('href');
+          if (!h || h.length < 2) return;
+          navEl.querySelectorAll('a.nav-link--active').forEach(function (x) {
+            x.classList.remove('nav-link--active');
+          });
+          a.classList.add('nav-link--active');
+        }, 320);
+      });
     });
   }
 
