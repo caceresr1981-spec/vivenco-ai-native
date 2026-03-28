@@ -8,7 +8,7 @@
   };
 
   /** Retraso entre filas (barras / sparks) para lectura más marcada. */
-  var STAGGER_MS = 90;
+  var STAGGER_MS = 145;
 
   function prefersReducedMotion() {
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
