@@ -6,8 +6,11 @@
 |------|-----|
 | `apps/web/` | Sitio estático (HTML/CSS/JS). **Vercel** despliega esta carpeta. |
 | `apps/web/data/` | `projects.json`, `uat.json` y los `.data.js` generados. **Fuente de verdad en Git** para Cursor. |
-| `apps/api/` | Servidor Node (Express): `GET/PUT /api/projects`, `/api/uat`, y **`PUT /api/sync`** (proyectos + UAT en un solo request). **Docker / Railway**. |
+| `apps/api/` | Servidor Node (Express): `GET/PUT /api/projects`, `/api/uat`, **`GET /api/export`** (paquete `{ projects, uat }`) y **`PUT /api/sync`**. **Docker / Railway**. |
 | `scripts/sync-tracker-data.*` | Regenera `*.data.js` desde los JSON (local sin servidor). |
+| `scripts/pull-api-to-repo.mjs` | API → escribe `apps/web/data/*.json` + `sync-tracker-data`. |
+| `scripts/push-repo-to-api.mjs` | Repo → `PUT /api/sync`. |
+| `scripts/import-export-file.mjs` | `tracker-export.json` descargado en el navegador → repo + sync. |
 
 ## Cargar datos en la web
 
@@ -17,7 +20,7 @@
 
 Orden de prioridad en `tracker-shared.js`: **API configurada → variables globales de scripts → fetch JSON**.
 
-## Sincronización: tres escenarios
+## Sincronización: escenarios
 
 ### A) Solo Cursor (Git como fuente de verdad)
 
@@ -55,9 +58,42 @@ Orden de prioridad en `tracker-shared.js`: **API configurada → variables globa
    window.__TRACKER_API_TOKEN__ = 'el-mismo-token-que-railway';
    ```
 
-5. **Aplicar cambios** en UAT llama a **`PUT /api/sync`** con `{ projects, uat }` para que **proyectos y UAT** se persistan juntos en el servidor (sincronización centralizada). No se fuerza descarga automática de JSON; el botón «Exportar uat.json» es solo respaldo manual.
+5. **Aplicar cambios** en UAT llama a **`PUT /api/sync`** con `{ projects, uat }` para que **proyectos y UAT** se persistan juntos en el servidor (sincronización centralizada).
 
-**Git vs API en Railway:** los archivos viven en el contenedor. Para que Cursor vea los mismos datos, o bien **exportas** JSON (descarga desde la UI / endpoint) y commiteas, o montas **volumen persistente** y documentas copia manual, o evolucionas a base de datos + export.
+6. Sin API ni archivos vinculados, el navegador puede guardar UAT en **localStorage**; al recargar, si la copia local es más reciente que el JSON, se usa (solo en ese equipo). Para equipo/Git sigue haciendo falta API o el flujo siguiente.
+
+### D) Git ↔ API (Railway / servidor)
+
+Objetivo: que `apps/web/data` en el repo refleje lo que hay en el servidor, o al revés.
+
+**Variables** (PowerShell / bash; opcionalmente copia `.env.example` a `.env` en la raíz del repo — ya está en `.gitignore`):
+
+- `TRACKER_API_BASE` — URL de la API, sin barra final (ej. `https://tu-servicio.up.railway.app` o `http://localhost:3001`).
+- `TRACKER_API_TOKEN` — mismo valor que `TRACKER_API_TOKEN` en Railway (solo obligatorio para **escritura**; lectura de `GET /api/export` es anónima, igual que `GET /api/projects`).
+
+**Servidor → repo (para commit en Git)**
+
+1. Engrane en `tracker.html` → **Descargar tracker-export.json** (requiere `config.js` con la API), **o** desde la raíz del repo:
+
+   ```bash
+   npm run pull-api
+   ```
+
+2. Revisa `apps/web/data/projects.json`, `uat.json` y los `*.data.js` generados; luego `git add` / `git commit` / `git push`.
+
+**Archivo descargado en el navegador → repo** (si no ejecutaste `pull-api`):
+
+```bash
+npm run import-export -- Descargas/tracker-export.json
+```
+
+**Repo → servidor** (subir el JSON del disco al contenedor):
+
+```bash
+npm run push-api
+```
+
+**Nota:** en Railway los datos viven en el volumen o en la imagen; `pull-api` + commit es la forma habitual de alinear el código con el estado “oficial” del equipo.
 
 ## Esquema UAT (`items[]`)
 

@@ -1032,7 +1032,7 @@ body {
   background: rgba(234, 88, 12, 0.18);
   border: 1px solid rgba(234, 88, 12, 0.30);
   color: var(--accent);
-  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 1.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1162,7 +1162,7 @@ body {
 
 .spark-trad {
   background: linear-gradient(90deg, rgba(234, 88, 12, 0.70), rgba(234, 88, 12, 0.18));
-  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width 1.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .spark-trad.spark-fill-pending {
@@ -1374,6 +1374,27 @@ a.tracker-card {
   font-weight: 700;
   margin: 0 0 0.5rem;
   color: var(--text);
+}
+
+.tracker-settings-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0 0 0.65rem;
+}
+
+.tracker-settings-cli {
+  margin: 0.65rem 0 0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-inset);
+  color: var(--text-muted);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .tracker-settings-btns {

@@ -4,6 +4,9 @@
   "description": "Landing + tracker interno (Vercel web / Railway API)",
   "scripts": {
     "sync": "node scripts/sync-tracker-data.mjs",
-    "api": "node apps/api/src/index.js"
+    "api": "node apps/api/src/index.js",
+    "pull-api": "node scripts/pull-api-to-repo.mjs",
+    "push-api": "node scripts/push-repo-to-api.mjs",
+    "import-export": "node scripts/import-export-file.mjs"
   }
 }

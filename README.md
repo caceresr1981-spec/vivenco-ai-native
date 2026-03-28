@@ -86,8 +86,12 @@ Las URLs limpias (`/`, `/tracker.html`) funcionan cuando el directorio raíz del
 
 ## Sincronizar JSON ↔ Cursor
 
-- **Fuente en disco:** edita `apps/web/data/*.json` y ejecuta `.\scripts\sync-tracker-data.ps1` o `node scripts/sync-tracker-data.mjs` para regenerar los `.data.js`.
-- **Cambios desde la web con API:** el servidor actualiza `/data` en el contenedor; para reflejarlos en Git, exporta o copia los JSON al repo y haz commit (o automatiza un job que haga pull desde backup).
+- **Fuente en disco:** edita `apps/web/data/*.json` y ejecuta `npm run sync` (o `.\scripts\sync-tracker-data.ps1`) para regenerar los `.data.js`.
+- **API ↔ Git:** con `TRACKER_API_BASE` (y token si aplica) en el entorno o en `.env` en la raíz del repo:
+
+  - `npm run pull-api` — `GET /api/export` → escribe `apps/web/data/*.json` y ejecuta sync.
+  - `npm run push-api` — lee esos JSON y `PUT /api/sync`.
+  - `npm run import-export -- ruta/tracker-export.json` — importa el archivo descargado desde el engranaje del tracker.
 
 Detalle en **[TRACKING.md](TRACKING.md)**.
 

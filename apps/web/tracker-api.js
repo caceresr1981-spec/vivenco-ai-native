@@ -68,12 +68,25 @@
     });
   }
 
+  /** GET /api/export — { exportedAt, projects, uat } para Git o respaldo. */
+  function fetchExportBundle() {
+    var base = getBase();
+    if (!base) {
+      return Promise.reject(new Error('no_api'));
+    }
+    return fetch(base + '/api/export', { credentials: 'omit' }).then(function (r) {
+      if (!r.ok) throw new Error('export_' + r.status);
+      return r.json();
+    });
+  }
+
   global.TrackerApi = {
     getBase: getBase,
     getToken: getToken,
     isConfigured: isConfigured,
     fetchJson: fetchJson,
     putJson: putJson,
-    putSync: putSync
+    putSync: putSync,
+    fetchExportBundle: fetchExportBundle
   };
 })(window);

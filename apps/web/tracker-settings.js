@@ -105,6 +105,27 @@
         setPanelMsg('Descarga de uat.json iniciada.');
       });
     }
+
+    var bundleBtn = document.getElementById('download-export-bundle-json');
+    if (bundleBtn && window.TrackerApi && window.TrackerApi.fetchExportBundle) {
+      if (window.TrackerApi.isConfigured()) {
+        bundleBtn.disabled = false;
+        bundleBtn.removeAttribute('title');
+        bundleBtn.addEventListener('click', function () {
+          window.TrackerApi
+            .fetchExportBundle()
+            .then(function (data) {
+              downloadBlob('tracker-export.json', data);
+              setPanelMsg(
+                'Descarga iniciada. En el repo: npm run import-export -- ruta/al/tracker-export.json'
+              );
+            })
+            .catch(function () {
+              setPanelMsg('Error al descargar desde la API (red, CORS o URL).');
+            });
+        });
+      }
+    }
   }
 
   if (document.readyState === 'loading') {

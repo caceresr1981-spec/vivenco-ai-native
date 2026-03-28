@@ -69,6 +69,23 @@ app.get('/api/uat', async function (req, res) {
   }
 });
 
+/** Paquete único para Git / backup: proyectos + UAT (misma fuente que GET /api/projects y /api/uat). */
+app.get('/api/export', async function (req, res) {
+  try {
+    const [projects, uat] = await Promise.all([
+      readJsonFile(PROJECTS_FILE),
+      readJsonFile(UAT_FILE)
+    ]);
+    res.json({
+      exportedAt: new Date().toISOString(),
+      projects,
+      uat
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'read_failed', message: String(e.message) });
+  }
+});
+
 app.put('/api/projects', requireWriteAuth, async function (req, res) {
   try {
     if (!req.body || typeof req.body !== 'object') {

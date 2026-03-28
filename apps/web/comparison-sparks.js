@@ -1,25 +1,56 @@
 (function () {
   'use strict';
 
+  /** Dispara cuando ~1/4 del bloque es visible; root “encogido” abajo para centrar mejor el momento del efecto. */
+  var OBSERVER_OPTS = {
+    threshold: 0.28,
+    rootMargin: '0px 0px -14% 0px'
+  };
+
+  /** Retraso entre filas (barras / sparks) para lectura más marcada. */
+  var STAGGER_MS = 90;
+
+  function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function fillTradBars(container) {
     if (!container || container.dataset.tradBarsAnimated === '1') return;
     container.dataset.tradBarsAnimated = '1';
-    container.querySelectorAll('.bar-fill-trad--pending').forEach(function (el) {
+    var els = container.querySelectorAll('.bar-fill-trad--pending');
+    var reduced = prefersReducedMotion();
+    els.forEach(function (el, i) {
       var w = el.getAttribute('data-bar-w');
       if (w == null) return;
-      el.classList.remove('bar-fill-trad--pending');
-      el.style.width = w + '%';
+      var go = function () {
+        el.classList.remove('bar-fill-trad--pending');
+        el.style.width = w + '%';
+      };
+      if (reduced) {
+        go();
+      } else {
+        window.setTimeout(go, i * STAGGER_MS);
+      }
     });
   }
 
   function fillTradSparks(container) {
     if (!container || container.dataset.tradSparksAnimated === '1') return;
     container.dataset.tradSparksAnimated = '1';
-    container.querySelectorAll('.spark-trad.spark-fill-pending').forEach(function (el) {
+    var els = container.querySelectorAll('.spark-trad.spark-fill-pending');
+    var reduced = prefersReducedMotion();
+    els.forEach(function (el, i) {
       var v = el.getAttribute('data-spark-v');
       if (v == null) return;
-      el.classList.remove('spark-fill-pending');
-      el.style.setProperty('--v', v);
+      var go = function () {
+        el.classList.remove('spark-fill-pending');
+        el.style.setProperty('--v', v);
+      };
+      if (reduced) {
+        go();
+      } else {
+        window.setTimeout(go, i * STAGGER_MS);
+      }
     });
   }
 
@@ -36,7 +67,7 @@
           if (entry.isIntersecting) fn(entry.target);
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+      OBSERVER_OPTS
     );
     obs.observe(el);
   }
@@ -53,7 +84,7 @@
 
     document.querySelectorAll('a[href="#impacto-cliente"], a[href="#comparador"]').forEach(function (a) {
       a.addEventListener('click', function () {
-        window.setTimeout(onNavigateToHash, 120);
+        window.setTimeout(onNavigateToHash, 220);
       });
     });
     window.addEventListener('hashchange', onNavigateToHash);

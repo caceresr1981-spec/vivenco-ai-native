@@ -84,8 +84,28 @@
                   <button type="button" class="btn btn-outline btn-sm" id="download-uat-json">Descargar JSON</button>
                 </div>
               </div>
+              <div class="tracker-settings-group">
+                <h3 class="tracker-settings-heading">Flujo Git ↔ API</h3>
+                <p class="tracker-settings-sub">
+                  Descarga un único archivo desde el servidor (mismo contenido que <code>GET /api/export</code>) o sincroniza desde la raíz del repo con variables <code>TRACKER_API_BASE</code> y <code>TRACKER_API_TOKEN</code>.
+                </p>
+                <div class="tracker-settings-btns">
+                  <button
+                    type="button"
+                    class="btn btn-outline btn-sm"
+                    id="download-export-bundle-json"
+                    disabled
+                    title="Configura __TRACKER_API_BASE__ en config.js"
+                  >
+                    Descargar tracker-export.json
+                  </button>
+                </div>
+                <pre class="tracker-settings-cli" tabindex="0">npm run pull-api
+npm run push-api
+npm run import-export -- descargas/tracker-export.json</pre>
+              </div>
               <p class="tracker-settings-note">
-                Con la <strong>API</strong> configurada en <code>config.js</code>, los cambios van al servidor. Sin API, vincula los JSON y usa <code>scripts/sync-tracker-data.ps1</code> para regenerar <code>.data.js</code>.
+                Con la <strong>API</strong> en <code>config.js</code>, los cambios van al servidor (<code>PUT /api/sync</code>). Sin API, vincula los JSON y usa <code>scripts/sync-tracker-data.ps1</code> para regenerar <code>.data.js</code>. Para alinear Git con Railway: <code>npm run pull-api</code> o descarga <code>tracker-export.json</code> y <code>npm run import-export</code>.
               </p>
             </div>
           </div>
