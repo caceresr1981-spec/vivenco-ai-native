@@ -52,14 +52,14 @@
     {
       "id": "uat-005",
       "projectId": "oms-wms-mvp",
-      "title": "Infraestructura: health, Postgres, migraciones y Docker Compose",
+      "title": "Infraestructura: health API, health DB y Postgres (Railway)",
       "status": "Pendiente",
       "priority": "Alta",
-      "descripcionTecnica": "Endpoints: GET /health y GET /health/db (ping SELECT 1 o modo memoria). Web: /api-proxy/health y /api-proxy/health/db. Migraciones en apps/api: tabla schema_migrations creada por el runner; cada .sql en db/migrations se aplica una sola vez en transacción (skip si ya figura en schema_migrations). Docker Compose en raíz del monorepo: servicio db (Postgres 16) + api con DATABASE_URL=postgresql://oms:oms@db:5432/oms; volumen persistente. Local: .env.example sugiere DATABASE_URL contra localhost:5432. Railway: DATABASE_URL en servicio API; pre-deploy debe compilar (dist) antes de node dist/db/migrate.js. Sin DATABASE_URL el API usa store en memoria y se pierde data al reiniciar.",
-      "accionesTester": "1) GET /api-proxy/health y /api-proxy/health/db (200, cuerpo coherente). 2) Opcional: docker compose up, luego desde host con DATABASE_URL a localhost ejecutar build+migrate+seed según README del monorepo. 3) En Railway, confirmar DATABASE_URL y que migraciones no fallen. 4) Tras migrate, verificar en Postgres tabla schema_migrations con filas por cada SQL aplicado. 5) Si falla, anotar error y marcar Bloqueado.",
-      "fechaCreacion": "2026-03-29",
+      "descripcionTecnica": "Endpoints: GET /health (API), GET /health/db (postgres opcional con ping). En el cliente web todo vía mismo origen: /api-proxy/health y /api-proxy/health/db. Criterio de éxito: health 200; health/db con ok:true y postgres:true cuando DATABASE_URL está en el servicio API; ping ok con SELECT 1. En Railway: variable DATABASE_URL en el servicio que corre la API, mismo proyecto/red que Postgres; pre-deploy migraciones sin fallar por ENOENT. Sin DATABASE_URL el API opera en memoria: datos no persisten tras reinicio.",
+      "accionesTester": "1) Abrir en el navegador (o curl) la URL del sitio + /api-proxy/health y /api-proxy/health/db. 2) Confirmar JSON y códigos 200. 3) En Railway, verificar DATABASE_URL y logs de arranque sin error de migración. 4) Anotar evidencia (captura o respuesta) y resultado. 5) Si falla DB, marcar Bloqueado y nota en descripcionTecnica.",
+      "fechaCreacion": "2026-03-28",
       "fechaFinalizacion": "",
-      "Descripción concisa del test case": "API viva, DB conectada, migraciones versionadas y opción Compose documentada."
+      "Descripción concisa del test case": "Validar que la API responde y que Postgres está conectado y migrado."
     },
     {
       "id": "uat-006",
@@ -168,6 +168,18 @@
       "fechaCreacion": "2026-03-29",
       "fechaFinalizacion": "",
       "Descripción concisa del test case": "Listar y crear reclamos desde UI; validar impacto en reportes KPI."
+    },
+    {
+      "id": "uat-015",
+      "projectId": "oms-wms-mvp",
+      "title": "Infra ampliada: Docker Compose local, schema_migrations y .env.example",
+      "status": "Pendiente",
+      "priority": "Media",
+      "descripcionTecnica": "Monorepo oms-wms-mvp: docker-compose con Postgres 16 + API y DATABASE_URL interna; volumen persistente. Migraciones: runner crea tabla schema_migrations y aplica cada .sql una vez en transacción. Raíz: .env.example con ejemplo de DATABASE_URL para desarrollo local contra localhost:5432. README documenta build antes de migrate/seed.",
+      "accionesTester": "1) Opcional: levantar stack con docker compose y comprobar API + health/db. 2) Tras migrate, inspeccionar schema_migrations en Postgres. 3) Revisar .env.example y README. 4) No sustituye uat-005 (Railway); complementa entorno local y trazabilidad de migraciones.",
+      "fechaCreacion": "2026-03-29",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Validar entorno local con Compose y migraciones versionadas."
     }
   ]
 }
