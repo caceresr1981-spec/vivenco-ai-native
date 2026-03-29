@@ -1,5 +1,5 @@
 window.__TRACKER_UAT__ = {
-  "updatedAt": "2026-03-28",
+  "updatedAt": "2026-03-29",
   "items": [
     {
       "id": "uat-001",
@@ -52,14 +52,14 @@ window.__TRACKER_UAT__ = {
     {
       "id": "uat-005",
       "projectId": "oms-wms-mvp",
-      "title": "Infraestructura: health API, health DB y Postgres (Railway)",
+      "title": "Infraestructura: health, Postgres, migraciones y Docker Compose",
       "status": "Pendiente",
       "priority": "Alta",
-      "descripcionTecnica": "Endpoints: GET /health (API), GET /health/db (postgres opcional con ping). En el cliente web todo vía mismo origen: /api-proxy/health y /api-proxy/health/db. Criterio de éxito: health 200; health/db con ok:true y postgres:true cuando DATABASE_URL está en el servicio API; ping ok con SELECT 1. En Railway: variable DATABASE_URL en el servicio que corre la API, mismo proyecto/red que Postgres; pre-deploy migraciones sin fallar por ENOENT. Sin DATABASE_URL el API opera en memoria: datos no persisten tras reinicio.",
-      "accionesTester": "1) Abrir en el navegador (o curl) la URL del sitio + /api-proxy/health y /api-proxy/health/db. 2) Confirmar JSON y códigos 200. 3) En Railway, verificar DATABASE_URL y logs de arranque sin error de migración. 4) Anotar evidencia (captura o respuesta) y resultado. 5) Si falla DB, marcar Bloqueado y nota en descripcionTecnica.",
-      "fechaCreacion": "2026-03-28",
+      "descripcionTecnica": "Endpoints: GET /health y GET /health/db (ping SELECT 1 o modo memoria). Web: /api-proxy/health y /api-proxy/health/db. Migraciones en apps/api: tabla schema_migrations creada por el runner; cada .sql en db/migrations se aplica una sola vez en transacción (skip si ya figura en schema_migrations). Docker Compose en raíz del monorepo: servicio db (Postgres 16) + api con DATABASE_URL=postgresql://oms:oms@db:5432/oms; volumen persistente. Local: .env.example sugiere DATABASE_URL contra localhost:5432. Railway: DATABASE_URL en servicio API; pre-deploy debe compilar (dist) antes de node dist/db/migrate.js. Sin DATABASE_URL el API usa store en memoria y se pierde data al reiniciar.",
+      "accionesTester": "1) GET /api-proxy/health y /api-proxy/health/db (200, cuerpo coherente). 2) Opcional: docker compose up, luego desde host con DATABASE_URL a localhost ejecutar build+migrate+seed según README del monorepo. 3) En Railway, confirmar DATABASE_URL y que migraciones no fallen. 4) Tras migrate, verificar en Postgres tabla schema_migrations con filas por cada SQL aplicado. 5) Si falla, anotar error y marcar Bloqueado.",
+      "fechaCreacion": "2026-03-29",
       "fechaFinalizacion": "",
-      "Descripción concisa del test case": "Validar que la API responde y que Postgres está conectado y migrado."
+      "Descripción concisa del test case": "API viva, DB conectada, migraciones versionadas y opción Compose documentada."
     },
     {
       "id": "uat-006",
@@ -156,6 +156,18 @@ window.__TRACKER_UAT__ = {
       "fechaCreacion": "2026-03-28",
       "fechaFinalizacion": "",
       "Descripción concisa del test case": "Validar login opcional y cierre de sesión."
+    },
+    {
+      "id": "uat-014",
+      "projectId": "oms-wms-mvp",
+      "title": "Postventa: reclamos — API listado + ingestión y pantalla /reclamos",
+      "status": "Pendiente",
+      "priority": "Media",
+      "descripcionTecnica": "API: GET /claims?limit&offset devuelve { items, total } orden descendente por fecha; POST /claims/ingest { channel, channelClaimId, orderId, reason, estimatedLoss }. Tabla claims en Postgres alineada con KPIs (reportes: reclamos en período, pérdidas estimadas). Web: ruta /reclamos con formulario de alta y listado paginado vía proxy; ítem de menú Reclamos en el shell. Los reclamos alimentan métricas de calidad en /reportes cuando hay datos en rango.",
+      "accionesTester": "1) Ir a /reclamos. 2) Registrar un reclamo con orderId existente (ej. ORD-...) y monto estimado. 3) Verificar que aparece en el listado y paginación. 4) Opcional: GET /api-proxy/claims con mismos parámetros y comparar JSON. 5) En /reportes, comprobar que el conteo de reclamos refleja el nuevo registro si cae en el período seleccionado.",
+      "fechaCreacion": "2026-03-29",
+      "fechaFinalizacion": "",
+      "Descripción concisa del test case": "Listar y crear reclamos desde UI; validar impacto en reportes KPI."
     }
   ]
 }
