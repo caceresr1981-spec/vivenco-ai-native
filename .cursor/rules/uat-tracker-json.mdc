@@ -1,0 +1,29 @@
+---
+description: UAT en JSON — agregar casos nuevos, no sustituir; estado desde la web AI-Native
+globs: data/uat.json,apps/web/data/uat.json,apps/web/data/uat.data.js
+alwaysApply: false
+---
+
+# UAT (`uat.json` / `uat.data.js`)
+
+## Agregar, no sustituir
+
+- Al documentar nuevas funcionalidades o alcances de prueba, **añade nuevos ítems** al array `items` con un **`id` nuevo y único** (p. ej. `uat-016`, `uat-017`).
+- **No reemplaces** el texto completo de casos ya existentes para “actualizarlos” con información nueva: eso borra el historial de criterios acordados.
+- Si una feature amplía un tema ya cubierto, crea un **caso adicional** que referencie al anterior en título o descripción (p. ej. “Extensión de … respecto de uat-005”).
+
+## Quién actualiza estado y cierre
+
+- Los campos **`status`**, **`fechaFinalizacion`**, **`accionesTester`**, **`descripcionTecnica`**, etc. de casos **existentes** se resuelven y editan principalmente desde la **web AI-Native** (tracker / modal UAT).
+- El agente **no debe sobrescribir** en masa esos valores al sincronizar el repo salvo corrección explícita del usuario (typo, `projectId` erróneo).
+
+## Después de editar `uat.json`
+
+- Regenerar **`apps/web/data/uat.data.js`** si la app estática lo usa (`window.__TRACKER_UAT__`), para no desalinear JSON y JS.
+
+## Ejemplo
+
+```text
+❌ Sustituir uat-005 por un párrafo nuevo que mezcla Railway + Docker Compose.
+✅ Mantener uat-005; agregar uat-016 solo para Docker Compose / schema_migrations.
+```

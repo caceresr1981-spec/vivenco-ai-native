@@ -107,12 +107,35 @@ body {
   justify-self: start;
 }
 
+/* Brillo suave en el gradiente del wordmark (efecto “shimmer” profesional) */
+@keyframes logo-ai-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .logo span {
-  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
+  display: inline-block;
+  background: linear-gradient(
+    105deg,
+    var(--accent-dark) 0%,
+    var(--accent-deep) 18%,
+    var(--accent) 38%,
+    #b4cce3 50%,
+    var(--accent) 62%,
+    var(--accent-deep) 82%,
+    var(--accent-dark) 100%
+  );
+  background-size: 260% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  animation: logo-ai-shimmer 14s ease-in-out infinite;
 }
 
 .logo:visited {
@@ -120,11 +143,31 @@ body {
 }
 
 .logo:visited span {
-  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
+  background: linear-gradient(
+    105deg,
+    var(--accent-dark) 0%,
+    var(--accent-deep) 18%,
+    var(--accent) 38%,
+    #b4cce3 50%,
+    var(--accent) 62%,
+    var(--accent-deep) 82%,
+    var(--accent-dark) 100%
+  );
+  background-size: 260% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  animation: logo-ai-shimmer 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo span,
+  .logo:visited span {
+    animation: none;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
+    background-size: 100% 100%;
+  }
 }
 
 .nav {
