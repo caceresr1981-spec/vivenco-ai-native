@@ -7,9 +7,11 @@
   --text: #f1f5f9;
   --text-muted: #94a3b8;
   --accent: #7a9ab8;
-  --accent-light: #a8c0d9;
-  --accent-hover: #8eb0d0;
-  --accent-deep: #4d6782;
+  /* Azul grisáceo “final” del gradiente; sin pasar por blanco */
+  --accent-light: #95adc4;
+  --accent-hover: #8aa6c2;
+  --accent-deep: #3d5a73;
+  --accent-dark: #1a2d3f;
   --accent-soft: rgba(122, 154, 184, 0.22);
   --accent-glow: rgba(122, 154, 184, 0.32);
   --teal: #3db8a8;
@@ -106,7 +108,7 @@ body {
 }
 
 .logo span {
-  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 48%, var(--accent-deep) 100%);
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -118,7 +120,7 @@ body {
 }
 
 .logo:visited span {
-  background: linear-gradient(135deg, var(--accent-light) 0%, var(--accent) 48%, var(--accent-deep) 100%);
+  background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -233,7 +235,7 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(165deg, var(--accent-light) 0%, var(--accent) 42%, var(--accent-deep) 100%);
+  background: linear-gradient(165deg, var(--accent-dark) 0%, var(--accent-deep) 40%, var(--accent) 100%);
   color: #f8fafc;
   box-shadow: 0 4px 20px var(--accent-glow);
 }
