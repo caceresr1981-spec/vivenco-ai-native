@@ -1665,15 +1665,15 @@ a.tracker-card {
 
 /* Estados UAT — semáforo más vivo */
 .uat-pend {
-  color: #e2e8f0;
-  background: rgba(100, 116, 139, 0.35);
-  border-color: rgba(148, 163, 184, 0.55);
+  color: #fde047;
+  background: rgba(161, 98, 7, 0.42);
+  border-color: rgba(250, 204, 21, 0.85);
 }
 
 .uat-test {
-  color: #fef9c3;
-  background: rgba(234, 179, 8, 0.28);
-  border-color: rgba(250, 204, 21, 0.65);
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.28);
+  border-color: rgba(96, 165, 250, 0.65);
 }
 
 .uat-block {
@@ -1928,7 +1928,7 @@ a.tracker-card {
   border: 1px solid transparent;
 }
 
-/* Prioridad — semáforo: alta rojo, media ámbar, baja verde */
+/* Prioridad — semáforo: alta rojo, media naranja, baja verde */
 .uat-prio-alta {
   color: #fecaca;
   background: rgba(239, 68, 68, 0.3);
@@ -1936,15 +1936,169 @@ a.tracker-card {
 }
 
 .uat-prio-media {
-  color: #fef08c;
-  background: rgba(245, 158, 11, 0.28);
-  border-color: rgba(251, 191, 36, 0.65);
+  color: #fdba74;
+  background: rgba(234, 88, 12, 0.32);
+  border-color: rgba(251, 146, 60, 0.75);
 }
 
 .uat-prio-baja {
   color: #bbf7d0;
   background: rgba(34, 197, 94, 0.26);
   border-color: rgba(74, 222, 128, 0.55);
+}
+
+/* Refuerzo: la lista UAT y el modal deben verse siempre con semáforo (evita caché / herencia) */
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-alta,
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-media,
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-baja {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-alta {
+  color: #fecaca !important;
+  background: rgba(239, 68, 68, 0.38) !important;
+  border-color: rgba(248, 113, 113, 0.85) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-media {
+  color: #fdba74 !important;
+  background: rgba(234, 88, 12, 0.38) !important;
+  border-color: rgba(251, 146, 60, 0.85) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-prio-cell .uat-prio-badge.uat-prio-baja {
+  color: #bbf7d0 !important;
+  background: rgba(34, 197, 94, 0.34) !important;
+  border-color: rgba(74, 222, 128, 0.75) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-status-cell .uat-badge.uat-pend {
+  color: #fde047 !important;
+  background: rgba(161, 98, 7, 0.48) !important;
+  border-color: rgba(250, 204, 21, 0.85) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-status-cell .uat-badge.uat-test {
+  color: #93c5fd !important;
+  background: rgba(59, 130, 246, 0.35) !important;
+  border-color: rgba(96, 165, 250, 0.75) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-status-cell .uat-badge.uat-block {
+  color: #fecaca !important;
+  background: rgba(239, 68, 68, 0.38) !important;
+  border-color: rgba(248, 113, 113, 0.75) !important;
+}
+
+.page-project-detail .uat-table-list .uat-col-status-cell .uat-badge.uat-ok {
+  color: #bbf7d0 !important;
+  background: rgba(34, 197, 94, 0.34) !important;
+  border-color: rgba(74, 222, 128, 0.75) !important;
+}
+
+/* Modal UAT: valor cerrado = semáforo; lista desplegable = neutra (option) */
+.uat-case-modal .uat-select {
+  color: #f8fafc;
+  background: #334155;
+  border-color: rgba(148, 163, 184, 0.55);
+  color-scheme: dark;
+}
+
+.uat-case-modal .uat-select:hover {
+  border-color: rgba(148, 163, 184, 0.8);
+}
+
+.uat-case-modal .uat-select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(61, 184, 168, 0.28);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-alta {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-alta:hover {
+  border-color: rgba(248, 113, 113, 0.85);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-media {
+  color: #fdba74;
+  background: rgba(234, 88, 12, 0.24);
+  border-color: rgba(251, 146, 60, 0.65);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-media:hover {
+  border-color: rgba(251, 146, 60, 0.85);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-baja {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-baja:hover {
+  border-color: rgba(74, 222, 128, 0.75);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-pend {
+  color: #fde047;
+  background: rgba(161, 98, 7, 0.38);
+  border-color: rgba(250, 204, 21, 0.65);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-pend:hover {
+  border-color: rgba(250, 204, 21, 0.85);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-test {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(96, 165, 250, 0.65);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-test:hover {
+  border-color: rgba(96, 165, 250, 0.85);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-block {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.28);
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-block:hover {
+  border-color: rgba(248, 113, 113, 0.85);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-ok {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.28);
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+.uat-case-modal .uat-select.uat-select--stat-ok:hover {
+  border-color: rgba(74, 222, 128, 0.8);
+}
+
+.uat-case-modal .uat-select.uat-select--prio-alta:focus,
+.uat-case-modal .uat-select.uat-select--prio-media:focus,
+.uat-case-modal .uat-select.uat-select--prio-baja:focus,
+.uat-case-modal .uat-select.uat-select--stat-pend:focus,
+.uat-case-modal .uat-select.uat-select--stat-test:focus,
+.uat-case-modal .uat-select.uat-select--stat-block:focus,
+.uat-case-modal .uat-select.uat-select--stat-ok:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(61, 184, 168, 0.28);
+}
+
+.uat-case-modal .uat-select option {
+  color: #f8fafc;
+  background: #1e293b;
 }
 
 .uat-case-modal {
@@ -2156,8 +2310,205 @@ a.tracker-card {
 
 .project-detail-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
+}
+
+/* Resumen proyecto: métricas con color distintivo */
+.stat--hours-pending {
+  border-radius: var(--radius);
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: rgba(161, 98, 7, 0.18);
+  padding: 0.85rem 1rem;
+}
+
+.stat--hours-pending .stat-value {
+  color: #fde047;
+}
+
+.stat--hours-done {
+  border-radius: var(--radius);
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  background: rgba(13, 148, 136, 0.14);
+  padding: 0.85rem 1rem;
+}
+
+.stat--hours-done .stat-value {
+  color: #5eead4;
+}
+
+.stat--acts-done {
+  border-radius: var(--radius);
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  background: rgba(34, 197, 94, 0.12);
+  padding: 0.85rem 1rem;
+}
+
+.stat--acts-done .stat-value {
+  color: #86efac;
+}
+
+.stat--acts-wip {
+  border-radius: var(--radius);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: rgba(37, 99, 235, 0.14);
+  padding: 0.85rem 1rem;
+}
+
+.stat--acts-wip .stat-value {
+  color: #93c5fd;
+}
+
+.activity-est-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.act-est-pendiente {
+  color: #e2e8f0;
+  background: rgba(71, 85, 105, 0.45);
+  border-color: rgba(148, 163, 184, 0.55);
+}
+
+.act-est-curso {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.22);
+  border-color: rgba(96, 165, 250, 0.55);
+}
+
+.act-est-hecha {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.22);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.activity-row-clickable {
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.activity-row-clickable:hover,
+.activity-row-clickable:focus {
+  background: rgba(61, 184, 168, 0.08);
+  outline: none;
+}
+
+.activity-modal {
+  z-index: 230;
+}
+
+.activity-modal-content {
+  max-height: min(92vh, 900px);
+  overflow-y: auto;
+}
+
+.activity-modal-id {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.activity-story-block {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-inset);
+}
+
+.activity-story-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.activity-story-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  line-height: 1.45;
+}
+
+.activity-story-k {
+  flex: 0 0 auto;
+  min-width: 4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.activity-story-input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* Modal actividad: responsable neutro; prioridad y estado con semáforo (valor cerrado) */
+.activity-modal .uat-select.activity-assignee-select {
+  color: #f8fafc;
+  background: #334155;
+  border-color: rgba(148, 163, 184, 0.55);
+  color-scheme: dark;
+}
+
+.activity-modal .uat-select.activity-assignee-select option {
+  color: #f8fafc;
+  background: #1e293b;
+}
+
+.activity-modal .uat-select.activity-select--prio-alta {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.activity-modal .uat-select.activity-select--prio-media {
+  color: #fdba74;
+  background: rgba(234, 88, 12, 0.24);
+  border-color: rgba(251, 146, 60, 0.65);
+}
+
+.activity-modal .uat-select.activity-select--prio-baja {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.activity-modal .uat-select.activity-select--est-pend {
+  color: #e2e8f0;
+  background: rgba(71, 85, 105, 0.35);
+  border-color: rgba(148, 163, 184, 0.55);
+}
+
+.activity-modal .uat-select.activity-select--est-curso {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(96, 165, 250, 0.65);
+}
+
+.activity-modal .uat-select.activity-select--est-hecha {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.28);
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+.activity-modal .uat-select[data-activity-field="priority"] option,
+.activity-modal .uat-select[data-activity-field="estado"] option {
+  color: #f8fafc;
+  background: #1e293b;
+}
+
+.page-project-detail .activity-modal .uat-select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(61, 184, 168, 0.28);
 }
 
 .project-milestone-list {

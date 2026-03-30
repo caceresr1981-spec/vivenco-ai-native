@@ -6,11 +6,14 @@
 
   var UAT_STATUSES = ['Pendiente', 'En prueba', 'Bloqueado', 'Aprobado'];
   var PRIORITIES = ['Alta', 'Media', 'Baja'];
+  var ACTIVITY_ESTADOS = ['Pendiente', 'En curso', 'Completada'];
+  var ACTIVITY_ASSIGNEES = ['Equipo A', 'Equipo B', 'Equipo C', 'Cliente'];
   /** Clave exacta en uat.json (coincide con el nombre del campo en el archivo). */
   var KEY_DESC_CONCISA = 'Descripción concisa del test case';
 
   /** True si el usuario editó el modal sin guardar con «Aplicar cambios». */
   var uatModalDirty = false;
+  var activityModalDirty = false;
   var uatBeforeUnloadBound = false;
 
   function getDescConcisa(it) {
@@ -75,6 +78,403 @@
     if (p === 'Alta') return 'uat-prio-badge uat-prio-alta';
     if (p === 'Media') return 'uat-prio-badge uat-prio-media';
     return 'uat-prio-badge uat-prio-baja';
+  }
+
+  function collectAssigneeOptions(project) {
+    var set = {};
+    ACTIVITY_ASSIGNEES.forEach(function (a) {
+      set[a] = true;
+    });
+    (project && project.activities ? project.activities : []).forEach(function (a) {
+      if (a && a.assignee) set[a.assignee] = true;
+    });
+    return Object.keys(set).sort();
+  }
+
+  function assigneeOptionsHtml(project, current) {
+    var opts = collectAssigneeOptions(project);
+    return opts
+      .map(function (v) {
+        return (
+          '<option value="' +
+          escapeAttr(v) +
+          '"' +
+          (v === current ? ' selected' : '') +
+          '>' +
+          TS.escapeHtml(v) +
+          '</option>'
+        );
+      })
+      .join('');
+  }
+
+  function hoursCellHtml(a) {
+    var total = a.hours != null ? Number(a.hours) : 0;
+    var done = a.hoursImplemented != null ? Number(a.hoursImplemented) : 0;
+    if (done > 0) {
+      return TS.escapeHtml(String(done)) + ' / ' + TS.escapeHtml(String(total)) + ' h';
+    }
+    return TS.escapeHtml(String(total)) + ' h';
+  }
+
+  function syncActivityModalSelects() {
+    var root = document.getElementById('activity-modal-body');
+    if (!root) return;
+    var pr = root.querySelector('select[data-activity-field="priority"]');
+    var st = root.querySelector('select[data-activity-field="estado"]');
+    if (pr) {
+      pr.classList.remove('activity-select--prio-alta', 'activity-select--prio-media', 'activity-select--prio-baja');
+      if (pr.value === 'Alta') pr.classList.add('activity-select--prio-alta');
+      else if (pr.value === 'Media') pr.classList.add('activity-select--prio-media');
+      else pr.classList.add('activity-select--prio-baja');
+    }
+    if (st) {
+      st.classList.remove('activity-select--est-pend', 'activity-select--est-curso', 'activity-select--est-hecha');
+      var em = { Pendiente: 'activity-select--est-pend', 'En curso': 'activity-select--est-curso', Completada: 'activity-select--est-hecha' };
+      st.classList.add(em[st.value] || 'activity-select--est-pend');
+    }
+  }
+
+  function syncTrackerProjectsFromState() {
+    var st = getState();
+    if (!st || !st.project || !st.projectId) return;
+    var bundle = window.__TRACKER_PROJECTS__;
+    if (!bundle || !bundle.projects) return;
+    for (var i = 0; i < bundle.projects.length; i++) {
+      if (bundle.projects[i].id === st.projectId) {
+        bundle.projects[i] = JSON.parse(JSON.stringify(st.project));
+        break;
+      }
+    }
+    bundle.updatedAt = new Date().toISOString().slice(0, 10);
+  }
+
+  function saveProjectsToLocalStorage() {
+    var body = window.__TRACKER_PROJECTS__;
+    if (!body) {
+      return Promise.resolve({ ok: false, reason: 'no_state' });
+    }
+    try {
+      body.updatedAt = new Date().toISOString().slice(0, 10);
+      window.localStorage.setItem('vivenco-tracker-projects', JSON.stringify(body));
+      window.localStorage.setItem('vivenco-tracker-projects-ts', String(Date.now()));
+      return Promise.resolve({ ok: true, source: 'localStorage' });
+    } catch (e) {
+      return Promise.resolve({ ok: false, reason: 'no_storage' });
+    }
+  }
+
+  function persistProjectsToDisk() {
+    syncTrackerProjectsFromState();
+    var body = window.__TRACKER_PROJECTS__;
+    if (!body) {
+      return Promise.resolve({ ok: false, reason: 'no_state' });
+    }
+    body.updatedAt = new Date().toISOString().slice(0, 10);
+    if (window.TrackerApi && window.TrackerApi.isConfigured() && window.TrackerApi.putJson) {
+      return window.TrackerApi
+        .putJson('projects', body)
+        .then(function (r) {
+          if (r && r.ok) return { ok: true, source: 'api' };
+          if (r && r.reason === 'unauthorized') return { ok: false, reason: 'api_unauthorized' };
+          return saveProjectsToLocalStorage();
+        })
+        .catch(function () {
+          return saveProjectsToLocalStorage();
+        });
+    }
+    var json = JSON.stringify(body, null, 2);
+    var J = window.JsonDiskSync;
+    if (J && J.supported && J.writeJsonString) {
+      return J.writeJsonString('projects', json).then(function (ru) {
+        if (ru && ru.ok) return { ok: true, source: 'disk' };
+        if (ru && (ru.reason === 'no_handle' || ru.reason === 'permission_denied')) {
+          return saveProjectsToLocalStorage();
+        }
+        return saveProjectsToLocalStorage();
+      });
+    }
+    return saveProjectsToLocalStorage();
+  }
+
+  function findActivityIndexById(activityId) {
+    var st = getState();
+    if (!st || !st.project || !st.project.activities) return -1;
+    for (var i = 0; i < st.project.activities.length; i++) {
+      var n = TS.normalizeActivity(st.project.activities[i], i, st.projectId);
+      if (n.id === activityId) return i;
+    }
+    return -1;
+  }
+
+  function updateActivityRowAndStats(activityId) {
+    var st = getState();
+    if (!st || !st.project) return;
+    var idx = findActivityIndexById(activityId);
+    if (idx < 0) return;
+    var a = TS.normalizeActivity(st.project.activities[idx], idx, st.projectId);
+    var tr = document.querySelector('#actividades-table tbody tr[data-activity-id="' + activityId + '"]');
+    if (tr) {
+      var dot = a.estado === 'En curso' ? '<span class="dot-inprogress" aria-hidden="true"></span> ' : '';
+      tr.innerHTML =
+        '<td>' +
+        dot +
+        TS.escapeHtml(a.title) +
+        '</td>' +
+        '<td><span class="' +
+        priorityBadgeClass(a.priority) +
+        '">' +
+        TS.escapeHtml(a.priority || '—') +
+        '</span></td>' +
+        '<td class="num">' +
+        hoursCellHtml(a) +
+        '</td>' +
+        '<td><span class="activity-est-badge ' +
+        TS.activityEstadoClass(a.estado) +
+        '">' +
+        TS.escapeHtml(a.estado) +
+        '</span></td>';
+    }
+    var m = TS.activityProjectMetrics(st.project.activities, st.projectId);
+    var el = function (sel, val) {
+      var e = document.querySelector(sel);
+      if (e) e.textContent = val;
+    };
+    el('[data-stat="horas-por-implementar"]', String(m.horasPorImplementar) + ' h');
+    el('[data-stat="horas-implementadas"]', String(m.horasImplementadas) + ' h');
+    el('[data-stat="actividades-completadas"]', String(m.actividadesCompletadas));
+    el('[data-stat="actividades-en-curso"]', String(m.actividadesEnCurso));
+  }
+
+  function closeActivityModal(forceClose) {
+    if (forceClose !== true && activityModalDirty) {
+      if (
+        !window.confirm(
+          '¿Cerrar sin guardar? Los cambios solo se aplican al pulsar «Guardar actividad» (API o archivo vinculado).'
+        )
+      ) {
+        return;
+      }
+    }
+    activityModalDirty = false;
+    var modal = document.getElementById('activity-modal');
+    if (!modal) return;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    modal.dataset.currentActivityId = '';
+    var body = document.getElementById('activity-modal-body');
+    if (body) body.innerHTML = '';
+  }
+
+  function openActivityModal(activityId) {
+    var st = getState();
+    if (!st || !st.project) return;
+    var idx = findActivityIndexById(activityId);
+    if (idx < 0) return;
+    var raw = st.project.activities[idx];
+    var a = TS.normalizeActivity(raw, idx, st.projectId);
+
+    var modal = document.getElementById('activity-modal');
+    var body = document.getElementById('activity-modal-body');
+    if (!modal || !body) return;
+
+    activityModalDirty = false;
+    modal.dataset.currentActivityId = activityId;
+
+    body.innerHTML =
+      '<div class="activity-modal-inner">' +
+      '<p class="activity-modal-id">ID: <code>' +
+      TS.escapeHtml(a.id) +
+      '</code></p>' +
+      '<label class="uat-modal-label"><span>Título</span>' +
+      '<input type="text" class="uat-input uat-modal-input" data-activity-field="title" value="' +
+      escapeAttr(a.title || '') +
+      '" /></label>' +
+      '<div class="activity-story-block">' +
+      '<p class="activity-story-title">Historia de usuario</p>' +
+      '<p class="activity-story-line"><span class="activity-story-k">Como</span>' +
+      '<input type="text" class="uat-input activity-story-input" data-activity-field="storyRole" value="' +
+      escapeAttr(a.storyRole || '') +
+      '" placeholder="rol o persona" /></p>' +
+      '<p class="activity-story-line"><span class="activity-story-k">quiero</span>' +
+      '<input type="text" class="uat-input activity-story-input" data-activity-field="storyWant" value="' +
+      escapeAttr(a.storyWant || '') +
+      '" placeholder="acción o funcionalidad" /></p>' +
+      '<p class="activity-story-line"><span class="activity-story-k">para</span>' +
+      '<input type="text" class="uat-input activity-story-input" data-activity-field="storyBenefit" value="' +
+      escapeAttr(a.storyBenefit || '') +
+      '" placeholder="beneficio" /></p>' +
+      '</div>' +
+      '<div class="uat-modal-fields">' +
+      '<div class="uat-modal-row">' +
+      '<label class="uat-modal-label"><span>Responsable</span>' +
+      '<select class="uat-select activity-assignee-select" data-activity-field="assignee">' +
+      assigneeOptionsHtml(st.project, a.assignee || ACTIVITY_ASSIGNEES[0]) +
+      '</select></label>' +
+      '<label class="uat-modal-label"><span>Estado</span>' +
+      '<select class="uat-select" data-activity-field="estado">' +
+      selectOptionsHtml(ACTIVITY_ESTADOS, a.estado || 'Pendiente') +
+      '</select></label>' +
+      '<label class="uat-modal-label"><span>Prioridad</span>' +
+      '<select class="uat-select" data-activity-field="priority">' +
+      selectOptionsHtml(PRIORITIES, a.priority || 'Media') +
+      '</select></label>' +
+      '</div>' +
+      '<div class="uat-modal-row2">' +
+      '<label class="uat-modal-label"><span>Horas estimadas</span>' +
+      '<input type="number" min="0" step="1" class="uat-input uat-modal-input" data-activity-field="hours" value="' +
+      escapeAttr(a.hours != null ? String(a.hours) : '0') +
+      '" /></label>' +
+      '<label class="uat-modal-label"><span>Horas implementadas</span>' +
+      '<input type="number" min="0" step="1" class="uat-input uat-modal-input" data-activity-field="hoursImplemented" value="' +
+      escapeAttr(a.hoursImplemented != null ? String(a.hoursImplemented) : '0') +
+      '" /></label>' +
+      '<label class="uat-modal-label"><span>Fecha de inicio</span>' +
+      '<input type="date" class="uat-input uat-modal-input" data-activity-field="fechaInicio" value="' +
+      escapeAttr(a.fechaInicio || '') +
+      '" /></label>' +
+      '<label class="uat-modal-label"><span>Fecha de finalización</span>' +
+      '<input type="date" class="uat-input uat-modal-input" data-activity-field="fechaFin" value="' +
+      escapeAttr(a.fechaFin || '') +
+      '" /></label>' +
+      '</div></div>' +
+      '<p id="activity-modal-feedback" class="uat-modal-feedback" role="status" aria-live="polite"></p>' +
+      '<div class="uat-modal-actions">' +
+      '<button type="button" class="btn btn-primary" id="activity-modal-save">Guardar actividad</button>' +
+      '<button type="button" class="btn btn-outline" id="activity-modal-cancel">Cerrar</button>' +
+      '</div></div>';
+
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    var titleEl = document.getElementById('activity-modal-title');
+    if (titleEl) titleEl.textContent = a.title || 'Actividad';
+    syncActivityModalSelects();
+
+  }
+
+  function readActivityField(name) {
+    var root = document.getElementById('activity-modal-body');
+    var el = root ? root.querySelector('[data-activity-field="' + name + '"]') : null;
+    return el ? String(el.value).trim() : '';
+  }
+
+  function setActivityFeedback(message, isError) {
+    var el = document.getElementById('activity-modal-feedback');
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('uat-modal-feedback--error', !!isError);
+    el.classList.toggle('uat-modal-feedback--ok', !isError && !!message);
+  }
+
+  function applyActivityModal() {
+    var modal = document.getElementById('activity-modal');
+    if (!modal) return;
+    var activityId = modal.dataset.currentActivityId;
+    if (!activityId) return;
+    var st = getState();
+    if (!st || !st.project) return;
+    var idx = findActivityIndexById(activityId);
+    if (idx < 0) return;
+
+    var title = readActivityField('title');
+    var estado = readActivityField('estado') || 'Pendiente';
+    var hours = parseFloat(readActivityField('hours'));
+    var hoursImpl = parseFloat(readActivityField('hoursImplemented'));
+    if (isNaN(hours) || hours < 0) hours = 0;
+    if (isNaN(hoursImpl) || hoursImpl < 0) hoursImpl = 0;
+    if (estado === 'Completada' && hoursImpl === 0 && hours > 0) hoursImpl = hours;
+
+    var updated = Object.assign({}, st.project.activities[idx], {
+      title: title || st.project.activities[idx].title,
+      storyRole: readActivityField('storyRole'),
+      storyWant: readActivityField('storyWant'),
+      storyBenefit: readActivityField('storyBenefit'),
+      assignee: readActivityField('assignee'),
+      estado: estado,
+      priority: readActivityField('priority') || 'Media',
+      hours: hours,
+      hoursImplemented: hoursImpl,
+      fechaInicio: readActivityField('fechaInicio'),
+      fechaFin: readActivityField('fechaFin'),
+      inProgress: estado === 'En curso'
+    });
+
+    var backup = JSON.parse(JSON.stringify(st.project.activities[idx]));
+    st.project.activities[idx] = updated;
+
+    var saveBtn = document.getElementById('activity-modal-save');
+    var saveLabel = saveBtn ? saveBtn.textContent : '';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Guardando…';
+    }
+    setActivityFeedback('Guardando…', false);
+
+    persistProjectsToDisk()
+      .then(function (r) {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = saveLabel;
+        }
+        if (r && r.ok) {
+          activityModalDirty = false;
+          var okMsg =
+            r.source === 'localStorage'
+              ? 'Guardado en este navegador (localStorage). Al recargar se recupera la copia más reciente.'
+              : 'Guardado.';
+          setActivityFeedback(okMsg, false);
+          updateActivityRowAndStats(activityId);
+          closeActivityModal(true);
+        } else {
+          st.project.activities[idx] = backup;
+          syncTrackerProjectsFromState();
+          var msg =
+            r && r.reason === 'api_unauthorized'
+              ? 'API: token inválido o ausente.'
+              : r && r.reason === 'no_storage'
+                ? 'No se pudo guardar: almacenamiento del navegador bloqueado o lleno (p. ej. modo privado).'
+                : 'No se pudo guardar el proyecto.';
+          setActivityFeedback(msg, true);
+        }
+      })
+      .catch(function () {
+        st.project.activities[idx] = backup;
+        syncTrackerProjectsFromState();
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = saveLabel;
+        }
+        setActivityFeedback('Error al guardar.', true);
+      });
+  }
+
+  /** Semáforo en el <select> cerrado; las <option> del desplegable siguen neutras (CSS). */
+  function syncUatModalSelectTraffic() {
+    var root = document.getElementById('uat-case-modal-body');
+    if (!root) return;
+    var pr = root.querySelector('select[data-modal-field="priority"]');
+    var st = root.querySelector('select[data-modal-field="status"]');
+    if (pr) {
+      pr.classList.remove('uat-select--prio-alta', 'uat-select--prio-media', 'uat-select--prio-baja');
+      if (pr.value === 'Alta') pr.classList.add('uat-select--prio-alta');
+      else if (pr.value === 'Media') pr.classList.add('uat-select--prio-media');
+      else pr.classList.add('uat-select--prio-baja');
+    }
+    if (st) {
+      st.classList.remove(
+        'uat-select--stat-pend',
+        'uat-select--stat-test',
+        'uat-select--stat-block',
+        'uat-select--stat-ok'
+      );
+      var map = {
+        Pendiente: 'uat-select--stat-pend',
+        'En prueba': 'uat-select--stat-test',
+        Bloqueado: 'uat-select--stat-block',
+        Aprobado: 'uat-select--stat-ok'
+      };
+      st.classList.add(map[st.value] || 'uat-select--stat-pend');
+    }
   }
 
   function setSyncStatus(message) {
@@ -250,6 +650,7 @@
     document.body.style.overflow = 'hidden';
 
     uatModalDirty = false;
+    syncUatModalSelectTraffic();
     body.addEventListener(
       'input',
       function () {
@@ -259,8 +660,16 @@
     );
     body.addEventListener(
       'change',
-      function () {
+      function (e) {
         uatModalDirty = true;
+        var t = e.target;
+        if (
+          t &&
+          t.getAttribute &&
+          (t.getAttribute('data-modal-field') === 'priority' || t.getAttribute('data-modal-field') === 'status')
+        ) {
+          syncUatModalSelectTraffic();
+        }
       },
       true
     );
@@ -552,9 +961,66 @@
     if (!uatBeforeUnloadBound) {
       uatBeforeUnloadBound = true;
       window.addEventListener('beforeunload', function (e) {
-        if (uatModalDirty) {
+        if (uatModalDirty || activityModalDirty) {
           e.preventDefault();
           e.returnValue = '';
+        }
+      });
+    }
+  }
+
+  function initActivityModalOnce() {
+    if (initActivityModalOnce.done) return;
+    initActivityModalOnce.done = true;
+    document.addEventListener('input', function (e) {
+      if (!e.target.closest('#activity-modal-body')) return;
+      activityModalDirty = true;
+    }, true);
+    document.addEventListener('change', function (e) {
+      if (!e.target.closest('#activity-modal-body')) return;
+      activityModalDirty = true;
+      var t = e.target;
+      if (
+        t &&
+        t.getAttribute &&
+        (t.getAttribute('data-activity-field') === 'priority' || t.getAttribute('data-activity-field') === 'estado')
+      ) {
+        syncActivityModalSelects();
+      }
+    }, true);
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('#activity-modal-save')) {
+        e.preventDefault();
+        applyActivityModal();
+        return;
+      }
+      if (e.target.closest('#activity-modal-cancel')) {
+        e.preventDefault();
+        closeActivityModal(false);
+        return;
+      }
+      var tr = e.target.closest('#actividades-table tbody tr.activity-row-clickable');
+      if (!tr) return;
+      var id = tr.getAttribute('data-activity-id');
+      if (id) openActivityModal(id);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var tr = e.target.closest('#actividades-table tbody tr.activity-row-clickable');
+      if (!tr) return;
+      e.preventDefault();
+      var id = tr.getAttribute('data-activity-id');
+      if (id) openActivityModal(id);
+    });
+    var backdrop = document.getElementById('activity-modal-backdrop');
+    var closeBtn = document.getElementById('activity-modal-close');
+    if (backdrop) backdrop.addEventListener('click', function () { closeActivityModal(false); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { closeActivityModal(false); });
+    var modal = document.getElementById('activity-modal');
+    if (modal) {
+      modal.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+          closeActivityModal(false);
         }
       });
     }
@@ -568,31 +1034,37 @@
 
     window.__PROJECT_UAT_STATE__ = {
       fullUat: JSON.parse(JSON.stringify(uatData)),
-      projectId: project.id
+      projectId: project.id,
+      project: JSON.parse(JSON.stringify(project))
     };
 
-    var hoursTotal = TS.totalHours(project.activities);
-    var inProgress = (project.activities || []).filter(function (a) {
-      return a.inProgress;
-    });
+    var metrics = TS.activityProjectMetrics(project.activities, project.id);
 
     var activitiesRows = (project.activities || [])
-      .map(function (a) {
+      .map(function (a, idx) {
+        var n = TS.normalizeActivity(a, idx, project.id);
+        var dot = n.estado === 'En curso' ? '<span class="dot-inprogress" aria-hidden="true"></span> ' : '';
         return (
-          '<tr>' +
+          '<tr class="activity-row activity-row-clickable" data-activity-id="' +
+          escapeAttr(n.id) +
+          '" tabindex="0" role="button" aria-label="Abrir detalle de actividad">' +
           '<td>' +
-          (a.inProgress ? '<span class="dot-inprogress"></span> ' : '') +
-          TS.escapeHtml(a.title) +
+          dot +
+          TS.escapeHtml(n.title) +
           '</td>' +
-          '<td>' +
-          TS.escapeHtml(a.assignee || '—') +
-          '</td>' +
+          '<td><span class="' +
+          priorityBadgeClass(n.priority) +
+          '">' +
+          TS.escapeHtml(n.priority || '—') +
+          '</span></td>' +
           '<td class="num">' +
-          TS.escapeHtml(a.hours != null ? String(a.hours) : '—') +
+          hoursCellHtml(n) +
           '</td>' +
-          '<td>' +
-          (a.inProgress ? '<span class="badge-ip">En curso</span>' : '—') +
-          '</td>' +
+          '<td><span class="activity-est-badge ' +
+          TS.activityEstadoClass(n.estado) +
+          '">' +
+          TS.escapeHtml(n.estado) +
+          '</span></td>' +
           '</tr>'
         );
       })
@@ -676,19 +1148,26 @@
         ? '<p class="project-summary">' + TS.escapeHtml(project.summary) + '</p>'
         : '<p class="project-muted">Sin resumen.</p>') +
       '<div class="project-detail-stats">' +
-      '<div class="stat"><span class="stat-label">Horas registradas</span><span class="stat-value">' +
-      hoursTotal +
+      '<div class="stat stat--hours-pending"><span class="stat-label">Horas por implementar</span><span class="stat-value" data-stat="horas-por-implementar">' +
+      metrics.horasPorImplementar +
       ' h</span></div>' +
-      '<div class="stat"><span class="stat-label">Actividades en curso</span><span class="stat-value">' +
-      inProgress.length +
+      '<div class="stat stat--hours-done"><span class="stat-label">Horas implementadas</span><span class="stat-value" data-stat="horas-implementadas">' +
+      metrics.horasImplementadas +
+      ' h</span></div>' +
+      '<div class="stat stat--acts-done"><span class="stat-label">Actividades completadas</span><span class="stat-value" data-stat="actividades-completadas">' +
+      metrics.actividadesCompletadas +
+      '</span></div>' +
+      '<div class="stat stat--acts-wip"><span class="stat-label">Actividades en curso</span><span class="stat-value" data-stat="actividades-en-curso">' +
+      metrics.actividadesEnCurso +
       '</span></div>' +
       '</div>' +
       '</section>' +
       '<section class="project-section" id="actividades">' +
       '<h2 class="project-section-title">Actividades</h2>' +
+      '<p class="uat-list-hint">Haz clic en una fila para ver la historia de usuario y editar responsable, estado y fechas. Sin API ni <code>projects.json</code> vinculado, «Guardar actividad» guarda en <strong>este navegador</strong> (localStorage).</p>' +
       '<div class="table-wrap">' +
-      '<table class="detail-table">' +
-      '<thead><tr><th>Actividad</th><th>Responsable</th><th>Horas</th><th>Estado</th></tr></thead>' +
+      '<table class="detail-table" id="actividades-table">' +
+      '<thead><tr><th>Actividad</th><th>Prioridad</th><th>Horas</th><th>Estado</th></tr></thead>' +
       '<tbody>' +
       (activitiesRows || '<tr><td colspan="4">Sin actividades</td></tr>') +
       '</tbody></table></div>' +
@@ -740,8 +1219,12 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function () {
+      init();
+      initActivityModalOnce();
+    });
   } else {
     init();
+    initActivityModalOnce();
   }
 })();
