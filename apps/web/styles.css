@@ -385,6 +385,14 @@ body {
   color: var(--accent);
 }
 
+.hero-subtitle .speed-highlight {
+  color: #f8d98f;
+  background: linear-gradient(90deg, rgba(165, 102, 199, 0.26), rgba(248, 217, 143, 0.2));
+  border: 1px solid rgba(165, 102, 199, 0.4);
+  border-radius: 0.4rem;
+  padding: 0.04rem 0.42rem;
+}
+
 .hero-ctas {
   display: flex;
   flex-wrap: wrap;
@@ -502,6 +510,17 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-muted);
+}
+
+.tool-badge-violet {
+  color: #d8c3f0;
+  background: rgba(106, 76, 147, 0.18);
+  border-color: rgba(146, 111, 190, 0.55);
+}
+
+.tool-badge-violet:hover {
+  border-color: rgba(175, 143, 214, 0.8);
+  box-shadow: 0 0 0 1px rgba(128, 90, 182, 0.25);
 }
 
 .benefits-list {
