@@ -331,7 +331,7 @@ body {
   min-height: 82vh;
   display: flex;
   align-items: center;
-  padding: 5.5rem 0 2.75rem;
+  padding: 5.5rem 0 1.25rem;
   overflow: hidden;
 }
 
@@ -493,6 +493,7 @@ body {
 /* --- AI advantage --- */
 .ai-advantage {
   background: var(--bg);
+  padding-top: 1.25rem;
 }
 
 .ai-tools {
@@ -506,19 +507,13 @@ body {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-}
-
-.tool-badge-violet {
   color: #d8c3f0;
   background: rgba(106, 76, 147, 0.18);
-  border-color: rgba(146, 111, 190, 0.55);
+  border: 1px solid rgba(146, 111, 190, 0.55);
+  border-radius: var(--radius);
 }
 
-.tool-badge-violet:hover {
+.tool-badge:hover {
   border-color: rgba(175, 143, 214, 0.8);
   box-shadow: 0 0 0 1px rgba(128, 90, 182, 0.25);
 }
@@ -542,6 +537,10 @@ body {
 
 .benefits-list li strong {
   color: var(--teal);
+}
+
+.benefit-highlight-white {
+  color: #ffffff;
 }
 
 /* --- Demos --- */
