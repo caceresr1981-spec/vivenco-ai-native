@@ -14,16 +14,17 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  function fillTradBars(container) {
-    if (!container || container.dataset.tradBarsAnimated === '1') return;
-    container.dataset.tradBarsAnimated = '1';
-    var els = container.querySelectorAll('.bar-fill-trad--pending');
+  /** Barras AI‑Native y Tradicional en #impacto-cliente (orden DOM: AI, trad por fila). */
+  function fillImpactBars(container) {
+    if (!container || container.dataset.impactBarsAnimated === '1') return;
+    container.dataset.impactBarsAnimated = '1';
+    var els = container.querySelectorAll('.bar-fill-ai--pending, .bar-fill-trad--pending');
     var reduced = prefersReducedMotion();
     els.forEach(function (el, i) {
       var w = el.getAttribute('data-bar-w');
       if (w == null) return;
       var go = function () {
-        el.classList.remove('bar-fill-trad--pending');
+        el.classList.remove('bar-fill-ai--pending', 'bar-fill-trad--pending');
         el.style.width = w + '%';
       };
       if (reduced) {
@@ -34,10 +35,18 @@
     });
   }
 
-  function fillTradSparks(container) {
-    if (!container || container.dataset.tradSparksAnimated === '1') return;
-    container.dataset.tradSparksAnimated = '1';
-    var els = container.querySelectorAll('.spark-trad.spark-fill-pending');
+  /** Sparks del comparador: por fila primero AI‑Native, luego Tradicional. */
+  function fillComparatorSparks(container) {
+    if (!container || container.dataset.comparatorSparksAnimated === '1') return;
+    container.dataset.comparatorSparksAnimated = '1';
+    var rows = container.querySelectorAll('.matrix-row');
+    var els = [];
+    rows.forEach(function (row) {
+      var ai = row.querySelector('.spark-ai.spark-fill-pending');
+      var tr = row.querySelector('.spark-trad.spark-fill-pending');
+      if (ai) els.push(ai);
+      if (tr) els.push(tr);
+    });
     var reduced = prefersReducedMotion();
     els.forEach(function (el, i) {
       var v = el.getAttribute('data-spark-v');
@@ -74,13 +83,13 @@
 
   function onNavigateToHash() {
     var h = location.hash;
-    if (h === '#impacto-cliente') fillTradBars(document.getElementById('impacto-cliente'));
-    if (h === '#comparador') fillTradSparks(document.getElementById('comparador'));
+    if (h === '#impacto-cliente') fillImpactBars(document.getElementById('impacto-cliente'));
+    if (h === '#comparador') fillComparatorSparks(document.getElementById('comparador'));
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    observeSection('impacto-cliente', fillTradBars);
-    observeSection('comparador', fillTradSparks);
+    observeSection('impacto-cliente', fillImpactBars);
+    observeSection('comparador', fillComparatorSparks);
 
     document.querySelectorAll('a[href="#impacto-cliente"], a[href="#comparador"]').forEach(function (a) {
       a.addEventListener('click', function () {

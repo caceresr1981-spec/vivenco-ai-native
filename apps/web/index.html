@@ -7,22 +7,17 @@
   <meta name="description" content="Sistemas empresariales hasta 3x-5x más rápido. Automatización, ERP, BPM y BI con desarrollo impulsado por IA." />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="site-theme-v2">
   <header class="header">
     <div class="container header-inner">
-      <a href="#" class="logo">VIVENCO <span>AI-Native</span></a>
+      <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
       <nav class="nav">
-        <a href="#soluciones">Soluciones</a>
+        <a href="#porque-nosotros">Porque diferentes?</a>
         <a href="comparison.html">AI-Native vs Tradicional</a>
+        <a href="#soluciones">Soluciones</a>
+        <a href="spec-wizard.html">Especificar proyecto</a>
         <a href="tracker.html">Proyectos</a>
-        <a href="#demos">Demos</a>
-        <a href="#casos">Casos de uso</a>
-        <a href="#ofertas">Ofertas</a>
       </nav>
-      <div class="header-ctas">
-        <a href="#diagnostico" class="btn btn-ghost">Diagnóstico gratuito</a>
-        <a href="#agendar" class="btn btn-primary">Agendar reunión</a>
-      </div>
       <button class="menu-toggle" aria-label="Abrir menú">
         <span></span><span></span><span></span>
       </button>
@@ -30,285 +25,161 @@
   </header>
 
   <main>
-    <!-- Hero -->
-    <section class="hero">
-      <div class="container hero-inner">
-        <p class="hero-badge">Software Factory AI-Native</p>
-        <h1 class="hero-title">
-          Software y soluciones con IA para automatizar e impulsar tu negocio
-        </h1>
-        <p class="hero-subtitle">
-          Diseñamos e implementamos sistemas para todo tipo de empresas (ERP, CRM, WMS, OMS, BPM, BI y automatizaciones) hasta <strong class="speed-highlight">3x-5x más rápido</strong> utilizando desarrollo asistido por inteligencia artificial, reduciendo costos, acelerando los tiempos de entrega y aumentando la calidad del producto.
-        </p>
-        <div class="hero-ctas">
-          <a href="#diagnostico" class="btn btn-primary btn-lg">Solicitar diagnóstico gratuito</a>
-          <a href="#demos" class="btn btn-secondary btn-lg">Ver demos</a>
-        </div>
+    <div
+      class="home-carousel"
+      id="home-carousel"
+      data-slide="0"
+      aria-roledescription="carrusel"
+      aria-label="Introducción en tres pantallas"
+    >
+      <div class="hero-video-wrap" aria-hidden="true">
+        <video class="hero-video" autoplay muted loop playsinline preload="auto">
+          <source src="assets/videos/BG1.mp4" type="video/mp4" />
+        </video>
       </div>
-      <div class="hero-bg"></div>
-    </section>
-
-    <!-- Ventaja AI-native -->
-    <section class="section ai-advantage">
-      <div class="container">
-        <h2 class="section-title">Por qué somos diferentes: desarrollo AI-native</h2>
-        <p class="section-intro">Utilizamos herramientas avanzadas de desarrollo asistido por IA para entregar más valor en menos tiempo.</p>
-
-        <div class="ai-tools">
-          <span class="tool-badge">Cursor</span>
-          <span class="tool-badge">OpenAI GPT-4</span>
-          <span class="tool-badge">GitHub Copilot</span>
-          <span class="tool-badge">Docker</span>
-          <span class="tool-badge">Railway</span>
-          <span class="tool-badge">Vercel</span>
+      <div class="home-carousel-scrim" aria-hidden="true"></div>
+      <div class="home-carousel-track">
+        <div class="home-carousel-slide">
+          <!-- Hero -->
+          <section class="hero">
+            <div class="container hero-inner">
+              <p class="hero-badge">Software Factory AI-Native</p>
+              <h1 class="hero-title">
+                Software y soluciones con IA para automatizar e impulsar tu negocio
+              </h1>
+              <p class="hero-subtitle">
+                Diseñamos e implementamos sistemas para todo tipo de empresas (ERP, CRM, WMS, OMS, BPM, BI y automatizaciones) hasta <strong class="speed-highlight"><span class="speed-highlight-inner">3x-5x más rápido</span></strong> utilizando desarrollo asistido por inteligencia artificial, reduciendo costos, acelerando los tiempos de entrega y aumentando la calidad del producto.
+              </p>
+            </div>
+          </section>
         </div>
 
-        <ul class="benefits-list">
-          <li><strong>3x-5x más rápido</strong> en desarrollo</li>
-          <li><strong>Menor costo</strong> por proyecto</li>
-          <li><strong>Prototipos rápidos</strong> para validar ideas</li>
-          <li><strong>Mayor calidad</strong> de código y arquitectura</li>
-          <li><strong>Refactoring asistido por AI</strong> en tiempo real</li>
-          <li><strong>Integraciones con APIs</strong> de forma <span class="benefit-highlight-white">rápida y escalable</span></li>
-        </ul>
-      </div>
-    </section>
+        <div class="home-carousel-slide">
+          <!-- Ventaja AI-native -->
+          <section id="porque-nosotros" class="section ai-advantage">
+            <div class="container">
+              <h2 class="section-title">Por qué somos diferentes: desarrollo AI-native</h2>
+              <p class="section-intro">Utilizamos herramientas avanzadas de desarrollo asistido por IA para entregar más valor en menos tiempo.</p>
 
-    <!-- Problemas de negocio / Soluciones -->
-    <section id="soluciones" class="section problems">
-      <div class="container">
-        <h2 class="section-title">Soluciones por problema de negocio</h2>
-        <p class="section-intro">No vendemos tecnología aislada. Resolvemos problemas concretos con resultados medibles.</p>
+              <div class="ai-tools">
+                <span class="tool-badge">Cursor</span>
+                <span class="tool-badge">OpenAI GPT-4</span>
+                <span class="tool-badge">GitHub Copilot</span>
+                <span class="tool-badge">Docker</span>
+                <span class="tool-badge">Railway</span>
+                <span class="tool-badge">Vercel</span>
+              </div>
 
-        <div class="problem-cards">
-          <article class="problem-card">
-            <div class="problem-icon">⚡</div>
-            <h3>Automatización de procesos</h3>
-            <div class="problem-block">
-              <strong>Problema:</strong> tareas manuales, errores operativos, baja productividad.
-            </div>
-            <div class="problem-block">
-              <strong>Solución:</strong> BPM, workflow automation, integración de sistemas.
-            </div>
-            <div class="problem-result">
-              <span class="result-label">Resultado</span>
-              Hasta 60% menos trabajo manual
-            </div>
-          </article>
+              <ul class="benefits-list">
+                <li><strong>3x-5x más rápido</strong> en desarrollo</li>
+                <li><strong>Menor costo</strong> por proyecto</li>
+                <li><strong>Prototipos rápidos</strong> para validar ideas</li>
+                <li><strong>Mayor calidad</strong> de código y arquitectura</li>
+                <li><strong>Refactoring asistido por AI</strong> en tiempo real</li>
+                <li><strong>Integraciones con APIs</strong> de forma <span class="benefit-highlight-white">rápida y escalable</span></li>
+              </ul>
 
-          <article class="problem-card">
-            <div class="problem-icon">🏢</div>
-            <h3>Sistemas empresariales a medida</h3>
-            <div class="problem-block">
-              <strong>Problema:</strong> sistemas legacy, ERPs rígidos, falta de integración.
+              <div class="ai-advantage-cta-row">
+                <div class="ai-advantage-cta-stack">
+                  <span class="ai-advantage-cta-label">AI-Native vs Tradicional</span>
+                  <a
+                    href="comparison.html"
+                    class="ai-advantage-cta-arrow js-transition-down"
+                    aria-label="Ir a AI-Native vs Tradicional"
+                  >
+                    <span class="ai-advantage-cta-arrow-icon" aria-hidden="true"></span>
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="problem-block">
-              <strong>Solución:</strong> ERP custom, plataformas SaaS, integraciones.
-            </div>
-            <div class="problem-result">
-              <span class="result-label">Resultado</span>
-              Mayor control operativo
-            </div>
-          </article>
+          </section>
+        </div>
 
-          <article class="problem-card">
-            <div class="problem-icon">📊</div>
-            <h3>Business Intelligence</h3>
-            <div class="problem-block">
-              <strong>Problema:</strong> datos dispersos, decisiones lentas.
+        <div class="home-carousel-slide">
+          <!-- Problemas de negocio / Soluciones -->
+          <section id="soluciones" class="section problems">
+            <div class="container">
+              <h2 class="section-title">Soluciones por problema de negocio</h2>
+              <div class="problems-intro-cta-row">
+                <p class="section-intro">No vendemos tecnología aislada. Resolvemos problemas concretos con resultados medibles.</p>
+                <a href="spec-wizard.html" class="problems-top-cta">
+                  <span class="problems-top-cta-text"
+                    >Especificá tu proyecto y<br />obtené tu demo gratis!</span
+                  >
+                  <span class="problems-top-cta-arrow" aria-hidden="true"
+                    ><span class="problems-top-cta-arrow-icon"></span
+                  ></span>
+                </a>
+              </div>
+
+              <div class="problem-cards">
+                <article class="problem-card">
+                  <div class="problem-icon">⚡</div>
+                  <h3>Automatización de procesos</h3>
+                  <div class="problem-block">
+                    <strong>Problema:</strong> tareas manuales, errores operativos, baja productividad.
+                  </div>
+                  <div class="problem-block">
+                    <strong>Solución:</strong> BPM, workflow automation, integración de sistemas.
+                  </div>
+                  <div class="problem-result">
+                    <span class="result-label">Resultado</span>
+                    Hasta 60% menos trabajo manual
+                  </div>
+                </article>
+
+                <article class="problem-card">
+                  <div class="problem-icon">🏢</div>
+                  <h3>Sistemas empresariales a medida</h3>
+                  <div class="problem-block">
+                    <strong>Problema:</strong> sistemas legacy, ERPs rígidos, falta de integración.
+                  </div>
+                  <div class="problem-block">
+                    <strong>Solución:</strong> ERP custom, plataformas SaaS, integraciones.
+                  </div>
+                  <div class="problem-result">
+                    <span class="result-label">Resultado</span>
+                    Mayor control operativo
+                  </div>
+                </article>
+
+                <article class="problem-card">
+                  <div class="problem-icon">📊</div>
+                  <h3>Business Intelligence</h3>
+                  <div class="problem-block">
+                    <strong>Problema:</strong> datos dispersos, decisiones lentas.
+                  </div>
+                  <div class="problem-block">
+                    <strong>Solución:</strong> dashboards, data warehouse, analytics.
+                  </div>
+                  <div class="problem-result">
+                    <span class="result-label">Resultado</span>
+                    Decisiones basadas en datos
+                  </div>
+                </article>
+              </div>
             </div>
-            <div class="problem-block">
-              <strong>Solución:</strong> dashboards, data warehouse, analytics.
-            </div>
-            <div class="problem-result">
-              <span class="result-label">Resultado</span>
-              Decisiones basadas en datos
-            </div>
-          </article>
+          </section>
         </div>
       </div>
-    </section>
 
-    <!-- Demos -->
-    <section id="demos" class="section demos">
-      <div class="container">
-        <h2 class="section-title">Demos de soluciones empresariales</h2>
-        <p class="section-intro">Prueba nuestras soluciones. La mayoría de empresas no muestra demos reales; nosotros sí.</p>
-
-        <div class="demo-cards">
-          <article class="demo-card">
-            <div class="demo-header">
-              <span class="demo-num">Demo 1</span>
-              <h3>Sistema CRM</h3>
-            </div>
-            <ul class="demo-features">
-              <li>Gestión de clientes</li>
-              <li>Pipeline de ventas</li>
-              <li>Automatización comercial</li>
-            </ul>
-            <a href="#" class="btn btn-outline demo-btn">Probar demo</a>
-          </article>
-
-          <article class="demo-card">
-            <div class="demo-header">
-              <span class="demo-num">Demo 2</span>
-              <h3>Automatización BPM</h3>
-            </div>
-            <ul class="demo-features">
-              <li>Aprobación de compras</li>
-              <li>Workflow financiero</li>
-              <li>Gestión de tareas</li>
-            </ul>
-            <a href="#" class="btn btn-outline demo-btn">Probar demo</a>
-          </article>
-
-          <article class="demo-card">
-            <div class="demo-header">
-              <span class="demo-num">Demo 3</span>
-              <h3>Dashboard BI</h3>
-            </div>
-            <ul class="demo-features">
-              <li>Analytics de ventas</li>
-              <li>Métricas financieras</li>
-              <li>KPIs operativos</li>
-            </ul>
-            <a href="#" class="btn btn-outline demo-btn">Probar demo</a>
-          </article>
-        </div>
-        <p class="demos-note">Demos disponibles como sandbox interactivo, video walkthrough o live demo agendada.</p>
+      <div class="home-carousel-nav" role="group" aria-label="Navegación entre pantallas">
+        <button type="button" class="home-carousel-prev" aria-label="Pantalla anterior" disabled>
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button type="button" class="home-carousel-next" aria-label="Pantalla siguiente">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
-    </section>
 
-    <!-- Casos de uso -->
-    <section id="casos" class="section cases">
-      <div class="container">
-        <h2 class="section-title">Casos de uso</h2>
-        <p class="section-intro">Resultados reales en empresas como la tuya.</p>
-
-        <div class="case-cards">
-          <article class="case-card">
-            <span class="case-tag">Retail</span>
-            <h3>Automatización financiera</h3>
-            <p><strong>Problema:</strong> conciliación manual de pagos.</p>
-            <p><strong>Solución:</strong> automatización BPM + integraciones.</p>
-            <div class="case-result">70% menos trabajo manual</div>
-          </article>
-          <article class="case-card">
-            <span class="case-tag">Seguros</span>
-            <h3>CRM para seguros</h3>
-            <p><strong>Problema:</strong> gestión manual de clientes.</p>
-            <p><strong>Solución:</strong> CRM + automatización de ventas.</p>
-            <div class="case-result">+30% en conversión</div>
-          </article>
-        </div>
+      <p class="home-carousel-hint" aria-hidden="true">Clic o → para avanzar · ← o botón para volver</p>
+      <div class="home-carousel-dots" role="presentation">
+        <span class="home-carousel-dot"></span>
+        <span class="home-carousel-dot"></span>
+        <span class="home-carousel-dot"></span>
       </div>
-    </section>
+    </div>
 
-    <!-- Metodología -->
-    <section class="section methodology">
-      <div class="container">
-        <h2 class="section-title">Nuestra metodología</h2>
-        <p class="section-intro">Un proceso claro que transmite profesionalismo y resultados.</p>
-
-        <ol class="method-steps">
-          <li>
-            <span class="step-num">1</span>
-            <strong>Discovery</strong>
-            <span>Análisis del negocio y procesos.</span>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <strong>Planning</strong>
-            <span>Diseño de arquitectura y roadmap.</span>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <strong>Development</strong>
-            <span>Construcción del sistema con desarrollo asistido por IA.</span>
-          </li>
-          <li>
-            <span class="step-num">4</span>
-            <strong>Optimization</strong>
-            <span>Soporte y mejora continua.</span>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- Ofertas productizadas -->
-    <section id="ofertas" class="section offers">
-      <div class="container">
-        <h2 class="section-title">Ofertas productizadas</h2>
-        <p class="section-intro">Paquetes claros. Sin “contactar para cotizar” sin contexto.</p>
-
-        <div class="offer-cards">
-          <article class="offer-card">
-            <h3>MVP en 30 días</h3>
-            <p class="offer-audience">Ideal para startups o innovación.</p>
-            <ul>
-              <li>Arquitectura</li>
-              <li>Backend</li>
-              <li>UI</li>
-              <li>Deploy</li>
-            </ul>
-            <a href="#agendar" class="btn btn-primary">Solicitar</a>
-          </article>
-          <article class="offer-card featured">
-            <span class="offer-badge">Recomendado</span>
-            <h3>Automatización de procesos</h3>
-            <p class="offer-audience">Ideal para empresas medianas.</p>
-            <ul>
-              <li>Diseño de workflow</li>
-              <li>Integraciones</li>
-              <li>Dashboards</li>
-            </ul>
-            <a href="#agendar" class="btn btn-primary">Solicitar</a>
-          </article>
-          <article class="offer-card">
-            <h3>Modernización de sistemas legacy</h3>
-            <p class="offer-audience">Para empresas con sistemas antiguos.</p>
-            <ul>
-              <li>Análisis de código</li>
-              <li>Refactoring</li>
-              <li>Migración tecnológica</li>
-            </ul>
-            <a href="#agendar" class="btn btn-primary">Solicitar</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Lead magnets -->
-    <section class="section lead-magnets">
-      <div class="container">
-        <h2 class="section-title">Recursos gratuitos para empezar</h2>
-        <div class="magnet-cards">
-          <article class="magnet-card">
-            <h3>Diagnóstico gratuito de procesos</h3>
-            <p>Evaluación de automatización, integración y sistemas.</p>
-            <a href="#diagnostico" class="btn btn-primary">Solicitar diagnóstico</a>
-          </article>
-          <article class="magnet-card">
-            <h3>Auditoría tecnológica</h3>
-            <p>Análisis de arquitectura, performance y deuda técnica.</p>
-            <a href="#diagnostico" class="btn btn-outline">Solicitar auditoría</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA final -->
-    <section class="section cta-final">
-      <div class="container">
-        <h2 class="section-title">Problema → Solución → Demo → Resultado</h2>
-        <p class="section-intro">El siguiente paso es tuyo. Elige cómo quieres empezar.</p>
-        <div class="cta-buttons">
-          <a href="#diagnostico" class="btn btn-primary btn-lg">Solicitar diagnóstico gratuito</a>
-          <a href="#demos" class="btn btn-secondary btn-lg">Ver demos</a>
-          <a id="agendar" href="#" class="btn btn-outline btn-lg">Agendar reunión</a>
-        </div>
-      </div>
-    </section>
   </main>
 
   <!-- Modal / Form diagnóstico -->

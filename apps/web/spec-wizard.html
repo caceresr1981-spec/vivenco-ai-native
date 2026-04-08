@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asistente de especificación | Vivenco AI-Native</title>
+  <meta name="description" content="Wizard interactivo: elegí producto, respondé en opción múltiple y obtené especificación técnica, prompt para Cursor y estimación de horas demo/MVP." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="page-spec-wizard spec-wizard--v1 site-theme-v2">
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
+      <nav class="nav">
+        <a href="index.html#porque-nosotros">Porque diferentes?</a>
+        <a href="comparison.html">AI-Native vs Tradicional</a>
+        <a href="index.html#soluciones">Soluciones</a>
+        <a href="spec-wizard.html" aria-current="page">Especificar proyecto</a>
+        <a href="tracker.html">Proyectos</a>
+      </nav>
+      <button class="menu-toggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="section spec-wizard-hero">
+      <div class="container">
+        <h1 class="section-title spec-wizard-title">
+          <span class="spec-wizard-title-highlight">Asistente de especificación técnica</span>
+        </h1>
+        <p class="section-intro spec-wizard-intro">
+          Definí si buscás un <span class="spec-intro-mvp">MVP (Producto mínimo viable)</span> o un
+          <span class="spec-intro-slpp">SLPP (Sistema Listo Para Producción)</span> con una breve guía de alcance, tiempos y costos.
+        </p>
+        <div class="spec-wizard-toolbar">
+          <button type="button" class="btn btn-outline btn-sm spec-wizard-reset-pick" id="spec-wizard-reset-pick" hidden>
+            Volver al inicio
+          </button>
+          <div class="spec-wizard-progress" id="spec-wizard-progress" hidden aria-hidden="true">
+            <div class="spec-wizard-progress-head">
+              <button type="button" class="btn btn-outline btn-sm" id="spec-wizard-step-back">Paso anterior</button>
+              <span class="spec-wizard-progress-text" id="spec-wizard-progress-text"></span>
+            </div>
+            <div class="spec-wizard-progress-track">
+              <div class="spec-wizard-progress-bar" id="spec-wizard-progress-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div id="spec-wizard-stage" class="spec-wizard-stage"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div
+    id="spec-us-modal"
+    class="spec-modal"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="spec-us-modal-title"
+  >
+    <div class="spec-modal-backdrop" id="spec-us-modal-backdrop"></div>
+    <div class="spec-modal-dialog">
+      <h2 id="spec-us-modal-title" class="spec-modal-title">Ejemplo: gestión de stock y órdenes</h2>
+      <p class="spec-modal-lead">
+        Caso típico de un <strong>sistema de inventario y pedidos</strong>. Los criterios siguen el estilo <strong>Dado / Cuando / Entonces</strong> para que el equipo pueda probarlos sin ambigüedad.
+      </p>
+      <div class="spec-modal-example">
+        <p><strong>Historia de usuario</strong></p>
+        <p>
+          <strong>Como</strong> encargado de depósito,<br />
+          <strong>quiero</strong> registrar ingresos de mercadería contra una orden de compra aprobada y ver el stock actualizado por ubicación,<br />
+          <strong>para</strong> evitar diferencias entre lo físico y lo contable y poder atender pedidos de venta con confianza.
+        </p>
+        <p><strong>Criterios de aceptación (ejemplos)</strong></p>
+        <ul>
+          <li>
+            <strong>Dado</strong> que existe una orden de compra en estado “Aprobada” con líneas de ítems y cantidades,
+            <strong>cuando</strong> registro un ingreso total de esa orden indicando almacén y remito,
+            <strong>entonces</strong> el stock de cada ítem aumenta en ese almacén, la orden pasa a “Recibida” y queda un movimiento de inventario auditable (usuario, fecha, documento).
+          </li>
+          <li>
+            <strong>Dado</strong> que un cliente tiene un pedido de venta confirmado con reserva de stock,
+            <strong>cuando</strong> el picking marca el pedido como “Despachado”,
+            <strong>entonces</strong> se descuenta el stock reservado, el pedido muestra trazabilidad (quién despachó y cuándo) y no puede despacharse dos veces el mismo pedido.
+          </li>
+          <li>
+            <strong>Dado</strong> que intento ingresar más cantidad que la pendiente de una orden de compra,
+            <strong>cuando</strong> guardo el ingreso,
+            <strong>entonces</strong> el sistema rechaza la operación, muestra un mensaje claro y no modifica el stock ni el estado de la orden.
+          </li>
+        </ul>
+        <p class="spec-modal-footnote">
+          Podés adaptar actores (usuario, sistema, integración), reglas de negocio y estados a tu operación; lo importante es que cada criterio sea comprobable.
+        </p>
+      </div>
+      <button type="button" class="btn btn-primary spec-modal-close" id="spec-us-modal-close">Entendido</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© Vivenco AI-Native. Asistente de especificación — uso interno y demostración.</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script src="spec-wizard.js"></script>
+</body>
+</html>

@@ -7,22 +7,23 @@
   <meta name="description" content="Comparativo visual entre una Software Factory AI-Native y una compañía tradicional. Beneficios para ERP, CRM, BPM, refactoring, apps e integraciones." />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="page-compare">
+<body class="page-compare site-theme-v2">
+  <div class="page-compare-video-wrap" aria-hidden="true">
+    <video class="page-compare-video" autoplay muted loop playsinline preload="metadata">
+      <source src="assets/videos/BG2.mkv" type="video/x-matroska" />
+    </video>
+    <div class="page-compare-video-scrim"></div>
+  </div>
   <header class="header">
     <div class="container header-inner">
       <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
       <nav class="nav">
-        <a href="index.html#soluciones">Soluciones</a>
+        <a href="index.html#porque-nosotros">Porque diferentes?</a>
         <a href="comparison.html" aria-current="page">AI-Native vs Tradicional</a>
+        <a href="index.html#soluciones">Soluciones</a>
+        <a href="spec-wizard.html">Especificar proyecto</a>
         <a href="tracker.html">Proyectos</a>
-        <a href="index.html#demos">Demos</a>
-        <a href="index.html#casos">Casos de uso</a>
-        <a href="index.html#ofertas">Ofertas</a>
       </nav>
-      <div class="header-ctas">
-        <a href="index.html#diagnostico" class="btn btn-ghost">Diagnóstico gratuito</a>
-        <a href="index.html#agendar" class="btn btn-primary">Agendar reunión</a>
-      </div>
       <button class="menu-toggle" aria-label="Abrir menú">
         <span></span><span></span><span></span>
       </button>
@@ -32,14 +33,13 @@
   <main>
     <section class="hero hero-compare">
       <div class="container hero-inner">
-        <p class="hero-badge">Battlecard de decisión</p>
+        <p><a href="index.html#soluciones" class="btn btn-outline btn-sm">Continuar</a></p>
         <h1 class="hero-title">AI‑Native vs desarrollo tradicional</h1>
         <p class="hero-subtitle">
           Si lo que compras es <strong>impacto</strong> (costos, eficiencia, velocidad y decisiones), el modelo de entrega importa. Aquí tienes un comparativo directo y visual para ERP, CRM, BPM, refactoring, apps e integraciones.<br /><br />
           Entregamos resultados de negocio con ciclos de desarrollo más cortos, menos retrabajo y mayor claridad de alcance.
         </p>
       </div>
-      <div class="hero-bg"></div>
     </section>
 
     <section class="section compare-snapshot">
@@ -52,6 +52,7 @@
             <div class="compare-head">
               <span class="compare-pill compare-pill--ai">Software Factory AI‑Native</span>
               <h3>Entrega orientada a resultados</h3>
+              <span class="score-callout score-callout--compare">x5 impacto</span>
               <p>Prototipado rápido, decisiones con evidencia y foco en automatización + datos + experiencia.</p>
             </div>
             <ul class="compare-list">
@@ -85,9 +86,15 @@
             </div>
 
             <div class="bar-row">
-              <div class="bar-label">Velocidad de entrega</div>
+              <div class="bar-label"><span class="bar-label-title">Velocidad de entrega</span> <span class="bar-callout">x5</span></div>
               <div class="bar">
-                <div class="bar-fill bar-fill--ai" style="width: 88%"><span>AI‑Native</span></div>
+                <div
+                  class="bar-fill bar-fill--ai bar-fill-ai--pending"
+                  style="width: 0%"
+                  data-bar-w="88"
+                >
+                  <span>AI‑Native</span>
+                </div>
                 <div
                   class="bar-fill bar-fill--trad bar-fill-trad--pending"
                   style="width: 0%"
@@ -99,9 +106,15 @@
             </div>
 
             <div class="bar-row">
-              <div class="bar-label">Reducción de retrabajo</div>
+              <div class="bar-label"><span class="bar-label-title">Reducción de retrabajo</span> <span class="bar-callout">x4</span></div>
               <div class="bar">
-                <div class="bar-fill bar-fill--ai" style="width: 82%"><span>AI‑Native</span></div>
+                <div
+                  class="bar-fill bar-fill--ai bar-fill-ai--pending"
+                  style="width: 0%"
+                  data-bar-w="82"
+                >
+                  <span>AI‑Native</span>
+                </div>
                 <div
                   class="bar-fill bar-fill--trad bar-fill-trad--pending"
                   style="width: 0%"
@@ -113,9 +126,15 @@
             </div>
 
             <div class="bar-row">
-              <div class="bar-label">Claridad de alcance</div>
+              <div class="bar-label"><span class="bar-label-title">Claridad de alcance</span> <span class="bar-callout">x5</span></div>
               <div class="bar">
-                <div class="bar-fill bar-fill--ai" style="width: 86%"><span>AI‑Native</span></div>
+                <div
+                  class="bar-fill bar-fill--ai bar-fill-ai--pending"
+                  style="width: 0%"
+                  data-bar-w="86"
+                >
+                  <span>AI‑Native</span>
+                </div>
                 <div
                   class="bar-fill bar-fill--trad bar-fill-trad--pending"
                   style="width: 0%"
@@ -127,9 +146,15 @@
             </div>
 
             <div class="bar-row">
-              <div class="bar-label">Time‑to‑ROI</div>
+              <div class="bar-label"><span class="bar-label-title">Time‑to‑ROI</span> <span class="bar-callout">x4</span></div>
               <div class="bar">
-                <div class="bar-fill bar-fill--ai" style="width: 84%"><span>AI‑Native</span></div>
+                <div
+                  class="bar-fill bar-fill--ai bar-fill-ai--pending"
+                  style="width: 0%"
+                  data-bar-w="84"
+                >
+                  <span>AI‑Native</span>
+                </div>
                 <div
                   class="bar-fill bar-fill--trad bar-fill-trad--pending"
                   style="width: 0%"
@@ -156,18 +181,24 @@
         <div class="matrix">
           <div class="matrix-head">
             <div class="matrix-cell matrix-title">Tipo</div>
-            <div class="matrix-cell matrix-title matrix-ai">AI‑Native</div>
-            <div class="matrix-cell matrix-title matrix-trad">Tradicional</div>
-            <div class="matrix-cell matrix-title">Beneficio para el negocio</div>
+            <div class="matrix-cell matrix-title matrix-ai">
+              <span class="matrix-ai-native-badge">AI‑Native</span>
+            </div>
+            <div class="matrix-cell matrix-title matrix-trad">
+              <span class="matrix-trad-badge">Tradicional</span>
+            </div>
+            <div class="matrix-cell matrix-title matrix-benefit">
+              <span class="matrix-benefit-col-badge">Beneficio para el negocio</span>
+            </div>
           </div>
 
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">🏗️</span>
                 <div>
                   <strong>ERP</strong>
                   <span>Operación + finanzas + inventario</span>
+                  <span class="score-callout score-callout--type">x5 impacto</span>
                 </div>
               </div>
             </div>
@@ -178,7 +209,7 @@
                 <span class="chip chip-good">MVP por módulos</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 90"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="90"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -201,10 +232,10 @@
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">🤝</span>
                 <div>
                   <strong>CRM</strong>
                   <span>Ventas + postventa + automatización</span>
+                  <span class="score-callout score-callout--type">x4 conversión</span>
                 </div>
               </div>
             </div>
@@ -215,7 +246,7 @@
                 <span class="chip chip-good">Iteración con ventas</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 88"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="88"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -238,10 +269,10 @@
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">🔁</span>
                 <div>
                   <strong>BPM</strong>
                   <span>Flujos, aprobaciones, compliance</span>
+                  <span class="score-callout score-callout--type">x5 eficiencia</span>
                 </div>
               </div>
             </div>
@@ -252,7 +283,7 @@
                 <span class="chip chip-good">Integración rápida</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 92"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="92"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -275,10 +306,10 @@
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">🧯</span>
                 <div>
                   <strong>Refactoring</strong>
                   <span>Deuda técnica + performance</span>
+                  <span class="score-callout score-callout--type">x3 estabilidad</span>
                 </div>
               </div>
             </div>
@@ -289,7 +320,7 @@
                 <span class="chip chip-good">Riesgo controlado</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 84"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="84"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -312,10 +343,10 @@
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">📱</span>
                 <div>
                   <strong>Apps</strong>
                   <span>Web/mobile + UX + iteración</span>
+                  <span class="score-callout score-callout--type">x4 adopción</span>
                 </div>
               </div>
             </div>
@@ -326,7 +357,7 @@
                 <span class="chip chip-good">UX medible</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 86"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="86"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -349,10 +380,10 @@
           <div class="matrix-row">
             <div class="matrix-cell">
               <div class="type">
-                <span class="type-icon">🔌</span>
                 <div>
                   <strong>Integraciones</strong>
                   <span>APIs, ETL, BI, sistemas</span>
+                  <span class="score-callout score-callout--type">x5 velocidad</span>
                 </div>
               </div>
             </div>
@@ -363,7 +394,7 @@
                 <span class="chip chip-good">Data-ready</span>
               </div>
               <div class="spark">
-                <div class="spark-ai" style="--v: 89"></div>
+                <div class="spark-ai spark-fill-pending" style="--v: 0" data-spark-v="89"></div>
               </div>
             </div>
             <div class="matrix-cell">
@@ -386,21 +417,6 @@
       </div>
     </section>
 
-    <section class="section conversion-panel">
-      <div class="container">
-        <div class="panel">
-          <div class="panel-copy">
-            <h2 class="section-title">¿Quieres ver esto aplicado a tu negocio?</h2>
-            <p class="section-intro">En 30–45 minutos identificamos el “quick win” con mayor ROI: automatización, integración o modernización.</p>
-          </div>
-          <div class="panel-ctas">
-            <a href="index.html#diagnostico" class="btn btn-primary btn-lg">Solicitar diagnóstico gratuito</a>
-            <a href="index.html#demos" class="btn btn-secondary btn-lg">Solicitar demo</a>
-            <a href="index.html#agendar" class="btn btn-outline btn-lg">Agendar reunión</a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="footer">
