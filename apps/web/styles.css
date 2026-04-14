@@ -2545,6 +2545,18 @@ body.page-exit-down main {
   margin: 1rem 0 0;
 }
 
+.tracker-action-status {
+  min-height: 1.15rem;
+}
+
+.tracker-action-status--ok {
+  color: #86efac;
+}
+
+.tracker-action-status--error {
+  color: #fca5a5;
+}
+
 .tracker-meta:empty {
   display: none;
 }
@@ -2578,7 +2590,6 @@ a.tracker-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
-  cursor: pointer;
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
   text-align: left;
 }
@@ -2743,9 +2754,31 @@ a.tracker-card {
 .tracker-card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.tracker-card-status-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.tracker-status-select {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  color: var(--text);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  padding: 0.3rem 0.45rem;
+}
+
+.tracker-status-select:focus {
+  outline: 2px solid rgba(61, 184, 168, 0.32);
+  outline-offset: 1px;
 }
 
 .tracker-system {
@@ -2792,6 +2825,18 @@ a.tracker-card {
   background: rgba(180, 90, 90, 0.1);
 }
 
+.status-pending-approval {
+  color: #fcd34d;
+  background: rgba(234, 179, 8, 0.16);
+  border-color: rgba(250, 204, 21, 0.36);
+}
+
+.status-rejected {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
 .status-default {
   color: var(--text-muted);
 }
@@ -2800,6 +2845,16 @@ a.tracker-card {
   font-size: 1.15rem;
   margin: 0 0 0.5rem;
   color: var(--text);
+}
+
+.tracker-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tracker-card-link:hover,
+.tracker-card-link:focus {
+  text-decoration: underline;
 }
 
 .tracker-client {
@@ -2812,6 +2867,10 @@ a.tracker-card {
   margin: 1rem 0 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.tracker-card-actions {
+  margin-top: 1rem;
 }
 
 .tracker-empty,
