@@ -13,8 +13,6 @@ Configure these repository secrets in GitHub (`Settings -> Secrets and variables
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID_STAGING`
 - `VERCEL_PROJECT_ID_PROD`
-- `RAILWAY_DEPLOY_HOOK_STAGING`
-- `RAILWAY_DEPLOY_HOOK_PROD`
 
 ## 2) Vercel project layout
 
@@ -34,9 +32,13 @@ Recommended: two Vercel projects from the same repo.
 Recommended: two Railway services (or two environments).
 
 - Staging API service:
-  - Deploy hook URL -> `RAILWAY_DEPLOY_HOOK_STAGING`
+  - Connected branch: `staging`
+  - Auto deploy from connected branch
 - Production API service:
-  - Deploy hook URL -> `RAILWAY_DEPLOY_HOOK_PROD`
+  - Connected branch: `main`
+  - Auto deploy from connected branch
+
+No GitHub secret is required for Railway deploy hooks in this mode.
 
 ## 4) Runtime variables by environment
 
@@ -58,3 +60,4 @@ Keep required checks on protected branches:
 - `build`
 
 Deploy workflows should run after merge to `staging` or `main`.
+Railway deploys independently based on branch connection.

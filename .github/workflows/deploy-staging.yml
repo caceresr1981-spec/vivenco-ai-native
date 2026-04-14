@@ -40,10 +40,3 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
-
-  deploy-api-staging:
-    name: Deploy API (Railway staging)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Railway deploy hook (staging)
-        run: curl -fsSL -X POST "${{ secrets.RAILWAY_DEPLOY_HOOK_STAGING }}"
