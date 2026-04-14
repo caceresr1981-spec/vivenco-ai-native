@@ -4059,22 +4059,22 @@ a.tracker-card {
   margin-bottom: 0.5rem;
 }
 
-/* Azul petróleo: fondo con brillo suave sobre el título */
+/* Azul oscuro: fondo más sobrio sobre el título */
 .page-spec-wizard .spec-wizard-title-highlight {
   display: inline;
   padding: 0.25rem 0.75rem 0.32rem;
   border-radius: 0.5rem;
-  color: #ecfdf5;
+  color: #eaf1ff;
   background: linear-gradient(
     145deg,
-    #050f14 0%,
-    #0a1f28 18%,
-    #0d3540 42%,
-    #134e52 68%,
-    #0c2830 100%
+    #060f22 0%,
+    #0b1a3a 22%,
+    #102a5a 48%,
+    #163567 72%,
+    #0b1d42 100%
   );
   background-size: 140% 140%;
-  border: 1px solid rgba(45, 166, 164, 0.45);
+  border: 1px solid rgba(96, 165, 250, 0.4);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.06) inset,
     0 6px 22px rgba(0, 18, 28, 0.55),

@@ -310,12 +310,24 @@
       }
     });
 
+    var hash = window.location.hash || '';
     var initialSlide = 0;
-    if (window.location.hash === '#porque-nosotros') {
+    if (hash === '#porque-nosotros') {
       initialSlide = 1;
-    } else if (window.location.hash === '#soluciones') {
+    } else if (hash === '#soluciones') {
       initialSlide = maxSlide;
     }
     applyCarouselSlide(initialSlide);
+
+    // Si se llega con hash desde la navbar (otra página), mostrar el sitio completo para evitar cortes del carrusel.
+    if (hash && hash !== '#diagnostico') {
+      var target = document.getElementById(hash.slice(1));
+      if (target) {
+        unlockHomeCarousel();
+        window.setTimeout(function () {
+          target.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }, 0);
+      }
+    }
   }
 })();
