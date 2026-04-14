@@ -34,6 +34,64 @@
     return window.__PROJECT_UAT_STATE__;
   }
 
+  function todayIso() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function setActivitySyncStatus(message) {
+    var el = document.getElementById('activity-sync-status');
+    if (el) el.textContent = message || '';
+  }
+
+  function nextActivityId(project) {
+    var st = getState();
+    var pid = (st && st.projectId) || (project && project.id) || 'proj';
+    var used = {};
+    (project && project.activities ? project.activities : []).forEach(function (a, idx) {
+      var n = TS.normalizeActivity(a, idx, pid);
+      used[n.id] = true;
+    });
+    var i = (project && project.activities ? project.activities.length : 0) + 1;
+    var candidate = pid + '-act-' + i;
+    while (used[candidate]) {
+      i += 1;
+      candidate = pid + '-act-' + i;
+    }
+    return candidate;
+  }
+
+  function nextUatId(fullUat, projectId) {
+    var prefix = projectId || 'proj';
+    var used = {};
+    var maxIdx = 0;
+    (fullUat && fullUat.items ? fullUat.items : []).forEach(function (it) {
+      if (!it || !it.id) return;
+      used[it.id] = true;
+      var m = String(it.id).match(new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '-uat-(\\d+)$'));
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (!isNaN(n) && n > maxIdx) maxIdx = n;
+      }
+    });
+    var i = maxIdx + 1;
+    var candidate = prefix + '-uat-' + i;
+    while (used[candidate]) {
+      i += 1;
+      candidate = prefix + '-uat-' + i;
+    }
+    return candidate;
+  }
+
+  function rerenderCurrentProject() {
+    var st = getState();
+    var projectsData = window.__TRACKER_PROJECTS__;
+    if (!st || !st.project || !st.fullUat || !projectsData) return;
+    var uatItems = (st.fullUat.items || []).filter(function (it) {
+      return it.projectId === st.projectId;
+    });
+    renderProject(st.project, uatItems, projectsData, st.fullUat);
+  }
+
   function findUatItemById(id) {
     var state = getState();
     if (!state || !state.fullUat || !state.fullUat.items) return null;
@@ -482,6 +540,84 @@
     if (el) el.textContent = message || '';
   }
 
+  function createManualActivity() {
+    var st = getState();
+    if (!st || !st.project) return;
+    if (!st.project.activities) st.project.activities = [];
+    var newId = nextActivityId(st.project);
+    var base = {
+      id: newId,
+      title: 'Nueva actividad',
+      storyRole: '',
+      storyWant: '',
+      storyBenefit: '',
+      assignee: ACTIVITY_ASSIGNEES[0],
+      estado: 'Pendiente',
+      priority: 'Media',
+      hours: 0,
+      hoursImplemented: 0,
+      fechaInicio: todayIso(),
+      fechaFin: '',
+      inProgress: false
+    };
+    st.project.activities.push(base);
+    setActivitySyncStatus('Creando actividad…');
+    persistProjectsToDisk()
+      .then(function (r) {
+        if (r && r.ok) {
+          setActivitySyncStatus('Actividad creada. Completa sus datos en el modal.');
+          rerenderCurrentProject();
+          openActivityModal(newId);
+        } else {
+          st.project.activities = st.project.activities.filter(function (a) { return a.id !== newId; });
+          syncTrackerProjectsFromState();
+          setActivitySyncStatus('No se pudo crear la actividad. Revisa API/archivo vinculado.');
+        }
+      })
+      .catch(function () {
+        st.project.activities = st.project.activities.filter(function (a) { return a.id !== newId; });
+        syncTrackerProjectsFromState();
+        setActivitySyncStatus('Error al crear actividad.');
+      });
+  }
+
+  function createManualUatCase() {
+    var st = getState();
+    if (!st || !st.fullUat) return;
+    if (!st.fullUat.items) st.fullUat.items = [];
+    var newId = nextUatId(st.fullUat, st.projectId);
+    var item = {
+      id: newId,
+      projectId: st.projectId,
+      title: 'Nuevo caso UAT',
+      descripcionTecnica: '',
+      accionesTester: '',
+      priority: 'Media',
+      status: 'Pendiente',
+      fechaCreacion: todayIso(),
+      fechaFinalizacion: ''
+    };
+    item[KEY_DESC_CONCISA] = '';
+    st.fullUat.items.push(item);
+    st.fullUat.updatedAt = todayIso();
+    setSyncStatus('Creando caso UAT…');
+    persistUatToDisk()
+      .then(function (r) {
+        if (r && r.ok) {
+          setSyncStatus('Caso UAT creado. Completa sus datos en el modal.');
+          rerenderCurrentProject();
+          openUatModal(newId);
+        } else {
+          st.fullUat.items = st.fullUat.items.filter(function (x) { return x.id !== newId; });
+          setSyncStatus('No se pudo crear el caso UAT. Revisa API/archivo vinculado.');
+        }
+      })
+      .catch(function () {
+        st.fullUat.items = st.fullUat.items.filter(function (x) { return x.id !== newId; });
+        setSyncStatus('Error al crear caso UAT.');
+      });
+  }
+
   /** Mensaje visible dentro del modal (el estado bajo la tabla queda tapado por el modal). */
   function setModalFeedback(message, isError) {
     var el = document.getElementById('uat-modal-feedback');
@@ -913,6 +1049,13 @@
   }
 
   function bindUatSection() {
+    var addBtn = document.getElementById('uat-add-manual');
+    if (addBtn) {
+      addBtn.addEventListener('click', function () {
+        createManualUatCase();
+      });
+    }
+
     var filter = document.getElementById('uat-filter');
     if (filter) {
       filter.addEventListener('change', applyUatFilter);
@@ -997,6 +1140,11 @@
       if (e.target.closest('#activity-modal-cancel')) {
         e.preventDefault();
         closeActivityModal(false);
+        return;
+      }
+      if (e.target.closest('#activity-add-manual')) {
+        e.preventDefault();
+        createManualActivity();
         return;
       }
       var tr = e.target.closest('#actividades-table tbody tr.activity-row-clickable');
@@ -1096,7 +1244,10 @@
 
     var uatBlock =
       '<section class="project-section project-section-uat" id="uat">' +
+      '<div class="project-section-head">' +
       '<h2 class="project-section-title">UAT — pruebas de este proyecto</h2>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="uat-add-manual">+ Caso UAT manual</button>' +
+      '</div>' +
       '<p class="uat-list-hint">Haz clic en una fila para ver y editar el detalle completo del caso.</p>' +
       (uatRows
         ? buildUatToolbar() +
@@ -1163,8 +1314,12 @@
       '</div>' +
       '</section>' +
       '<section class="project-section" id="actividades">' +
+      '<div class="project-section-head">' +
       '<h2 class="project-section-title">Actividades</h2>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="activity-add-manual">+ Actividad manual</button>' +
+      '</div>' +
       '<p class="uat-list-hint">Haz clic en una fila para ver la historia de usuario y editar responsable, estado y fechas. Sin API ni <code>projects.json</code> vinculado, «Guardar actividad» guarda en <strong>este navegador</strong> (localStorage).</p>' +
+      '<p id="activity-sync-status" class="uat-sync-status" aria-live="polite"></p>' +
       '<div class="table-wrap">' +
       '<table class="detail-table" id="actividades-table">' +
       '<thead><tr><th>Actividad</th><th>Prioridad</th><th>Horas</th><th>Estado</th></tr></thead>' +
