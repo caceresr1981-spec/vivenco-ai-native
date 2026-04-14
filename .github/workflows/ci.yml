@@ -2,21 +2,43 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, staging]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, staging]
 
 jobs:
-  sync-check:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Validate JSON
+      - name: Validate tracker JSON
         run: node -e "JSON.parse(require('fs').readFileSync('apps/web/data/projects.json','utf8')); JSON.parse(require('fs').readFileSync('apps/web/data/uat.json','utf8'));"
-      - name: Sync script
+      - name: Validate JavaScript syntax
+        run: node -e "const fs=require('fs');const path=require('path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){if(e.name==='node_modules'||e.name==='.git')continue;const p=path.join(d,e.name);if(e.isDirectory())walk(p);else if(p.endsWith('.js')||p.endsWith('.mjs')){new Function(fs.readFileSync(p,'utf8'));}}} walk('.');"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run sync consistency check
         run: node scripts/sync-tracker-data.mjs
-      - name: API install
+      - name: API dependency install
         run: cd apps/api && npm ci
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: API dependency install
+        run: cd apps/api && npm ci
+      - name: Build Docker image
+        run: docker build -t ai-native-dev-landing-ci .
