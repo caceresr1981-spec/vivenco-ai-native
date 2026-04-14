@@ -279,7 +279,10 @@
     answers: [],
     phases: null,
     customStory: null,
-    customSolutionName: null
+    customSolutionName: null,
+    companyName: null,
+    personName: null,
+    email: null
   };
 
   function getProductDisplayName(product) {
@@ -313,6 +316,10 @@
     var d = document.createElement('div');
     d.textContent = String(s);
     return d.innerHTML;
+  }
+
+  function todayIso() {
+    return new Date().toISOString().slice(0, 10);
   }
 
   function totalHours(phases) {
@@ -479,6 +486,87 @@
     ].join('\n');
   }
 
+  function buildAiOutputContract() {
+    return [
+      '{',
+      '  "missing_fields": [',
+      '    { "field": "string", "why_it_matters": "string", "severity": "high|medium|low" }',
+      '  ],',
+      '  "follow_up_questions": [',
+      '    { "section": "string", "question": "string", "reason": "string" }',
+      '  ],',
+      '  "proposed_stories": [',
+      '    {',
+      '      "as_a": "string",',
+      '      "i_want": "string",',
+      '      "so_that": "string",',
+      '      "acceptance_criteria": ["Given ... When ... Then ..."]',
+      '    }',
+      '  ],',
+      '  "uat_candidates": [',
+      '    { "title": "string", "priority": "Alta|Media|Baja", "status": "Pendiente", "project_scope": "string" }',
+      '  ],',
+      '  "risks": [',
+      '    {',
+      '      "risk": "string",',
+      '      "impact": "Alto|Medio|Bajo",',
+      '      "probability": "Alta|Media|Baja",',
+      '      "mitigation": "string"',
+      '    }',
+      '  ]',
+      '}'
+    ].join('\n');
+  }
+
+  function buildAiFollowUpPrompt(productLine, specMarkdown) {
+    return [
+      'Actúa como analista funcional senior y arquitecto de software.',
+      'Objetivo: mejorar la especificación técnica con preguntas más específicas y sustanciales.',
+      '',
+      'Reglas:',
+      '- No repitas información ya explícita.',
+      '- Prioriza preguntas que reduzcan riesgo funcional, de integración, seguridad y operación.',
+      '- Máximo 3 preguntas por sección.',
+      '- Devuelve SOLO JSON válido usando este contrato:',
+      buildAiOutputContract(),
+      '',
+      'Contexto del proyecto:',
+      '- Solución: ' + productLine,
+      '',
+      'Especificación actual:',
+      specMarkdown
+    ].join('\n');
+  }
+
+  function buildAiValidationPrompt(specMarkdown) {
+    return [
+      'Eres reviewer técnico de especificaciones de producto.',
+      'Evalúa completitud y detecta ambigüedades para evitar retrabajo.',
+      '',
+      'Checklist mínimo obligatorio:',
+      '1) Objetivo medible y KPIs',
+      '2) Actores/roles y permisos',
+      '3) Alcance in/out',
+      '4) Flujos críticos extremo a extremo',
+      '5) Integraciones, contratos y errores esperados',
+      '6) Datos sensibles, trazabilidad y auditoría',
+      '7) Criterios de aceptación verificables',
+      '8) Casos UAT iniciales',
+      '',
+      'Devuelve SOLO JSON con este formato:',
+      '{',
+      '  "score_0_100": 0,',
+      '  "critical_gaps": ["string"],',
+      '  "ambiguous_points": ["string"],',
+      '  "quick_wins": ["string"],',
+      '  "go_no_go": "GO|NO_GO"',
+      '}',
+      '',
+      'Especificación a evaluar:',
+      specMarkdown
+    ].join('\n');
+  }
+
   function resetToPick() {
     state.step = 'pick';
     state.productId = null;
@@ -488,6 +576,9 @@
     state.phases = null;
     state.customStory = null;
     state.customSolutionName = null;
+    state.companyName = null;
+    state.personName = null;
+    state.email = null;
     el('spec-wizard-progress').hidden = true;
     el('spec-wizard-progress').setAttribute('aria-hidden', 'true');
     el('spec-wizard-reset-pick').hidden = true;
@@ -843,164 +934,341 @@
     });
   }
 
+  function buildCurrentReviewState(product, qs) {
+    var byId = {};
+    state.answers.forEach(function (a) {
+      byId[a.qId] = a;
+    });
+    var maturityAns = byId.delivery_maturity;
+    var maturityKey = maturityAns && maturityAns.maturityKey ? maturityAns.maturityKey : (state.maturityChoice || 'mvp');
+    var selectedQuestions = qs.map(function (q) {
+      var a = byId[q.id];
+      var idx = 0;
+      if (a) {
+        for (var i = 0; i < q.options.length; i++) {
+          if (q.options[i].label === a.choiceLabel) {
+            idx = i;
+            break;
+          }
+        }
+      }
+      return { q: q, optionIndex: idx };
+    });
+    return {
+      maturityKey: maturityKey,
+      companyName: state.companyName || '',
+      personName: state.personName || '',
+      email: state.email || '',
+      selectedQuestions: selectedQuestions
+    };
+  }
+
+  function computeFromReview(product, reviewState) {
+    var profile = MATURITY_PROFILES[reviewState.maturityKey] || MATURITY_PROFILES.mvp;
+    var phases = clonePhases(product.baseHours);
+    var answers = [];
+    addDelta(phases, profile.delta);
+    answers.push({
+      qId: 'delivery_maturity',
+      maturityKey: profile.key,
+      qText: MATURITY_QUESTION_TEXT,
+      choiceLabel: profile.label,
+      delta: profile.delta
+    });
+    reviewState.selectedQuestions.forEach(function (row) {
+      var opt = row.q.options[row.optionIndex] || row.q.options[0];
+      answers.push({
+        qId: row.q.id,
+        qText: row.q.text,
+        choiceLabel: opt.label,
+        delta: opt.delta || {}
+      });
+      addDelta(phases, opt.delta || {});
+    });
+    return {
+      maturityKey: profile.key,
+      answers: answers,
+      phases: phases
+    };
+  }
+
+  function saveProjectSubmission(project) {
+    function parseLocal(key) {
+      try {
+        var raw = localStorage.getItem(key);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function fetchJson(path) {
+      return fetch(path).then(function (r) {
+        if (!r.ok) throw new Error(path);
+        return r.json();
+      });
+    }
+
+    return Promise.all([
+      fetchJson('data/projects.json').catch(function () { return null; }),
+      fetchJson('data/uat.json').catch(function () { return null; })
+    ]).then(function (pair) {
+      var localProjects = parseLocal('vivenco-tracker-projects');
+      var localUat = parseLocal('vivenco-tracker-uat');
+      var projectsBody = localProjects || pair[0] || { updatedAt: todayIso(), projects: [] };
+      var uatBody = localUat || pair[1] || { updatedAt: todayIso(), items: [] };
+      if (!projectsBody.projects) projectsBody.projects = [];
+      projectsBody.projects.unshift(project);
+      projectsBody.updatedAt = todayIso();
+      uatBody.updatedAt = todayIso();
+      localStorage.setItem('vivenco-tracker-projects', JSON.stringify(projectsBody));
+      localStorage.setItem('vivenco-tracker-projects-ts', String(Date.now()));
+      localStorage.setItem('vivenco-tracker-uat', JSON.stringify(uatBody));
+      localStorage.setItem('vivenco-tracker-uat-ts', String(Date.now()));
+      return { ok: true };
+    }).catch(function () {
+      return { ok: false };
+    });
+  }
+
+  function toSlug(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .slice(0, 40);
+  }
+
+  function makeSubmissionProject(product, companyName, personName, email, computed, specMd, cursorPrompt) {
+    var stamp = Date.now().toString().slice(-6);
+    var baseName = state.customSolutionName || product.name || 'proyecto';
+    var pid = 'req-' + toSlug(baseName || 'proyecto') + '-' + stamp;
+    var maturityTag = computed.maturityKey === 'production' ? 'SLPP' : 'MVP';
+    var projName = (state.customSolutionName || product.name) + ' (' + maturityTag + ')';
+    var today = todayIso();
+    var discoveryHours = computed.phases.discovery || 0;
+    var buildHours = Math.max(0, totalHours(computed.phases) - discoveryHours);
+    return {
+      id: pid,
+      name: projName,
+      system: product.name,
+      status: 'Pendiente de aprobación',
+      client: companyName,
+      companyName: companyName,
+      contactName: personName,
+      contactEmail: email,
+      summary:
+        'Solicitud generada desde Asistente de especificación. Estado inicial pendiente de aprobación para implementación.',
+      specMarkdown: specMd,
+      cursorPrompt: cursorPrompt,
+      activities: [
+        {
+          id: pid + '-act-0',
+          title: 'Revisión funcional y aprobación inicial',
+          hours: discoveryHours,
+          hoursImplemented: 0,
+          assignee: 'Equipo A',
+          priority: 'Alta',
+          estado: 'Pendiente',
+          inProgress: false,
+          fechaInicio: '',
+          fechaFin: '',
+          storyRole: personName || 'cliente',
+          storyWant: 'validar alcance y supuestos del proyecto',
+          storyBenefit: 'aprobar implementación sin retrabajo'
+        },
+        {
+          id: pid + '-act-1',
+          title: 'Implementación del alcance acordado',
+          hours: buildHours,
+          hoursImplemented: 0,
+          assignee: 'Equipo B',
+          priority: 'Media',
+          estado: 'Pendiente',
+          inProgress: false,
+          fechaInicio: '',
+          fechaFin: '',
+          storyRole: 'equipo técnico',
+          storyWant: 'desarrollar solución según especificación',
+          storyBenefit: 'entregar valor validado al cliente'
+        }
+      ],
+      milestones: [
+        { title: 'Solicitud enviada', date: today },
+        { title: 'Aprobación interna', date: '' },
+        { title: 'Inicio implementación', date: '' }
+      ]
+    };
+  }
+
   function finishFlow(product, qs) {
     state.step = 'done';
     el('spec-wizard-progress-bar').style.width = '100%';
-    el('spec-wizard-progress-text').textContent = 'Completado';
+    el('spec-wizard-progress-text').textContent = 'Revisión final';
     el('spec-wizard-step-back').hidden = true;
-
-    var mvpTotal = totalHours(state.phases);
-    var demoTotal = demoHours(mvpTotal);
-    var demoPhases = distributeDemo(state.phases, demoTotal, mvpTotal);
-    var specMd = buildSpec(product, state.answers);
-    var cursorPrompt = buildCursorPrompt(
-      product,
-      specMd,
-      state.phases,
-      mvpTotal,
-      demoTotal,
-      state.maturityChoice
-    );
-    var matAns = getMaturityAnswer(state.answers);
-    var daysMvpByPhase = {};
-    var daysDemoByPhase = {};
-    PHASE_KEYS.forEach(function (k) {
-      daysMvpByPhase[k] = workDaysFromHours(state.phases[k]);
-      daysDemoByPhase[k] = workDaysFromHours(demoPhases[k]);
-    });
-
-    var isV2 = typeof document !== 'undefined' && document.body && document.body.classList.contains('spec-wizard--v2');
-    var jsonExport = {
-      generatedAt: new Date().toISOString(),
-      experience: {
-        id: isV2 ? 'vivenco-ai-native-2' : 'vivenco-ai-native-1',
-        label: isV2 ? 'Vivenco AI-Native 2.0' : 'Vivenco AI-Native'
-      },
-      stack: STACK,
-      product: {
-        id: product.id,
-        name: getProductLineWithTier(product),
-        blurb: product.blurb
-      },
-      customStory: state.customStory,
-      deliveryMaturity: state.maturityChoice,
-      deliveryMaturityLabel: matAns ? matAns.choiceLabel : null,
-      answers: state.answers,
-      hoursMvpByPhase: state.phases,
-      hoursMvpTotal: mvpTotal,
-      hoursDemoByPhase: demoPhases,
-      hoursDemoTotal: demoTotal,
-      workdaysAssumptionHoursPerDay: HOURS_PER_WORKDAY,
-      daysMvpByPhase: daysMvpByPhase,
-      daysDemoByPhase: daysDemoByPhase,
-      daysMvpTotal: workDaysFromHours(mvpTotal),
-      daysDemoTotal: workDaysFromHours(demoTotal),
-      specMarkdown: specMd,
-      cursorPrompt: cursorPrompt
-    };
-
-    var tableRows = PHASE_KEYS.map(function (k) {
-      return (
-        '<tr><td>' +
-        esc(PHASE_LABELS[k]) +
-        '</td><td class="num">' +
-        esc(fmtHoursDays(state.phases[k])) +
-        '</td><td class="num">' +
-        esc(fmtHoursDays(demoPhases[k])) +
-        '</td></tr>'
-      );
-    }).join('');
+    var review = buildCurrentReviewState(product, qs);
+    var rows = review.selectedQuestions
+      .map(function (row, idx) {
+        return (
+          '<div class="spec-review-row">' +
+          '<label class="spec-custom-label" for="spec-review-q-' +
+          idx +
+          '">' +
+          esc(row.q.text) +
+          '</label>' +
+          '<select class="spec-custom-input" id="spec-review-q-' +
+          idx +
+          '" data-review-q-index="' +
+          idx +
+          '">' +
+          row.q.options
+            .map(function (opt, optIdx) {
+              return (
+                '<option value="' +
+                optIdx +
+                '"' +
+                (optIdx === row.optionIndex ? ' selected' : '') +
+                '>' +
+                esc(opt.label) +
+                '</option>'
+              );
+            })
+            .join('') +
+          '</select>' +
+          '</div>'
+        );
+      })
+      .join('');
 
     el('spec-wizard-stage').innerHTML =
-      '<div class="spec-result-grid">' +
-      '<section class="spec-result-card">' +
-      '<h2 class="spec-result-heading">Resumen</h2>' +
-      '<p class="spec-result-product spec-maturity-product spec-maturity-product--result"><strong>' +
-      esc(getProductLineWithTier(product)) +
-      '</strong></p>' +
-      '<ul class="spec-result-stats">' +
-      '<li><span>Horas MVP (referencia)</span><strong>' +
-      esc(fmtHoursDays(mvpTotal)) +
-      '</strong></li>' +
-      '<li><span>Horas demo (referencia)</span><strong>' +
-      esc(fmtHoursDays(demoTotal)) +
-      '</strong></li>' +
-      '<li><span>Calendario demo (~32 h/sem)</span><strong>~' +
-      weeksAt(demoTotal, 32) +
-      ' sem</strong></li>' +
-      '<li><span>Calendario MVP (~32 h/sem)</span><strong>~' +
-      weeksAt(mvpTotal, 32) +
-      ' sem</strong></li>' +
-      '</ul>' +
-      '<p class="spec-result-note">Los días entre paréntesis son <strong>esfuerzo</strong> (~' +
-      HOURS_PER_WORKDAY +
-      ' h hábiles por día). Las semanas de calendario son orientativas (1 perfil dedicado, ~32 h/sem). Ajustá según equipo real.</p>' +
-      '</section>' +
-      '<section class="spec-result-card">' +
-      '<h2 class="spec-result-heading">Actividades por fase</h2>' +
-      '<div class="table-wrap">' +
-      '<table class="detail-table spec-hours-table">' +
-      '<thead><tr><th>Fase</th><th class="num">MVP (h)</th><th class="num">Demo (h)</th></tr></thead>' +
-      '<tbody>' +
-      tableRows +
-      '<tr class="spec-hours-total"><td><strong>Total</strong></td><td class="num"><strong>' +
-      esc(fmtHoursDays(mvpTotal)) +
-      '</strong></td><td class="num"><strong>' +
-      esc(fmtHoursDays(demoTotal)) +
-      '</strong></td></tr>' +
-      '</tbody></table></div>' +
-      '</section>' +
+      '<section class="spec-result-card spec-result-wide">' +
+      '<h2 class="spec-result-heading">Revisión final antes de enviar</h2>' +
+      '<p class="spec-muted">Validá y editá tus respuestas. Al enviar, la solicitud se crea en Proyectos con estado <strong>Pendiente de aprobación</strong>.</p>' +
+      '<div class="spec-custom-form">' +
+      '<label class="spec-custom-label" for="spec-review-company">Nombre de empresa</label>' +
+      '<input class="spec-custom-input" id="spec-review-company" type="text" value="' +
+      esc(review.companyName) +
+      '" />' +
+      '<label class="spec-custom-label" for="spec-review-person">Nombre de la persona</label>' +
+      '<input class="spec-custom-input" id="spec-review-person" type="text" value="' +
+      esc(review.personName) +
+      '" />' +
+      '<label class="spec-custom-label" for="spec-review-email">Email</label>' +
+      '<input class="spec-custom-input" id="spec-review-email" type="email" value="' +
+      esc(review.email) +
+      '" />' +
+      '<label class="spec-custom-label" for="spec-review-maturity">Nivel de entrega</label>' +
+      '<select class="spec-custom-input" id="spec-review-maturity">' +
+      '<option value="mvp"' +
+      (review.maturityKey === 'mvp' ? ' selected' : '') +
+      '>' +
+      esc(MATURITY_PROFILES.mvp.label) +
+      '</option>' +
+      '<option value="production"' +
+      (review.maturityKey === 'production' ? ' selected' : '') +
+      '>' +
+      esc(MATURITY_PROFILES.production.label) +
+      '</option>' +
+      '</select>' +
+      rows +
       '</div>' +
-      '<section class="spec-result-card spec-result-wide">' +
-      '<h2 class="spec-result-heading">Especificación (Markdown)</h2>' +
-      '<pre class="spec-pre" id="spec-md-pre"></pre>' +
-      '</section>' +
-      '<section class="spec-result-card spec-result-wide">' +
-      '<h2 class="spec-result-heading">Prompt para Cursor</h2>' +
-      '<p class="spec-muted">Copiá este bloque en Cursor (Composer / agente) como punto de partida. Podés iterar con ChatGPT usando el JSON exportado.</p>' +
-      '<textarea class="spec-textarea" id="spec-cursor-ta" rows="14" readonly></textarea>' +
+      '<p id="spec-submit-feedback" class="spec-muted" aria-live="polite"></p>' +
       '<div class="spec-wizard-actions">' +
-      '<button type="button" class="btn btn-primary" id="spec-copy-prompt">Copiar prompt</button>' +
-      '<button type="button" class="btn btn-outline" id="spec-download-json">Descargar JSON</button>' +
+      '<button type="button" class="btn btn-primary" id="spec-submit-project">Enviar solicitud</button>' +
+      '<button type="button" class="btn btn-outline" id="spec-cancel-project">Cancelar</button>' +
       '</div>' +
       '</section>';
 
-    el('spec-md-pre').textContent = specMd;
-    el('spec-cursor-ta').value = cursorPrompt;
-
-    el('spec-copy-prompt').addEventListener('click', function () {
-      var text = el('spec-cursor-ta').value;
-      var btn = el('spec-copy-prompt');
-      function ok() {
-        btn.textContent = 'Copiado';
-        setTimeout(function () {
-          btn.textContent = 'Copiar prompt';
-        }, 2000);
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(ok).catch(function () {
-          el('spec-cursor-ta').select();
-          document.execCommand('copy');
-          ok();
-        });
-      } else {
-        el('spec-cursor-ta').select();
-        document.execCommand('copy');
-        ok();
-      }
+    el('spec-cancel-project').addEventListener('click', function () {
+      resetToPick();
     });
 
-    el('spec-download-json').addEventListener('click', function () {
-      var blob = new Blob([JSON.stringify(jsonExport, null, 2)], { type: 'application/json;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'especificacion-vivenco-' + product.id + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    el('spec-submit-project').addEventListener('click', function () {
+      var companyName = (el('spec-review-company').value || '').trim();
+      var personName = (el('spec-review-person').value || '').trim();
+      var email = (el('spec-review-email').value || '').trim();
+      if (!companyName || !personName || !email) {
+        el('spec-submit-feedback').textContent = 'Completá Nombre de empresa, Nombre de la persona y Email.';
+        return;
+      }
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!emailOk) {
+        el('spec-submit-feedback').textContent = 'Ingresá un email válido.';
+        return;
+      }
 
-    window.__SPEC_WIZARD_LAST__ = jsonExport;
+      var maturityKey = el('spec-review-maturity').value || 'mvp';
+      var selectedQuestions = qs.map(function (q, idx) {
+        var sel = el('spec-review-q-' + idx);
+        var optionIndex = sel ? parseInt(sel.value, 10) : 0;
+        if (isNaN(optionIndex) || optionIndex < 0 || optionIndex >= q.options.length) optionIndex = 0;
+        return { q: q, optionIndex: optionIndex };
+      });
+
+      var computed = computeFromReview(product, {
+        maturityKey: maturityKey,
+        selectedQuestions: selectedQuestions
+      });
+      state.maturityChoice = computed.maturityKey;
+      state.answers = computed.answers;
+      state.phases = computed.phases;
+      state.companyName = companyName;
+      state.personName = personName;
+      state.email = email;
+
+      var mvpTotal = totalHours(computed.phases);
+      var demoTotal = demoHours(mvpTotal);
+      var specMd = buildSpec(product, computed.answers);
+      var cursorPrompt = buildCursorPrompt(
+        product,
+        specMd,
+        computed.phases,
+        mvpTotal,
+        demoTotal,
+        computed.maturityKey
+      );
+      var project = makeSubmissionProject(
+        product,
+        companyName,
+        personName,
+        email,
+        computed,
+        specMd,
+        cursorPrompt
+      );
+
+      var submitBtn = el('spec-submit-project');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando…';
+      el('spec-submit-feedback').textContent = 'Guardando solicitud…';
+
+      saveProjectSubmission(project).then(function (r) {
+        if (!r || !r.ok) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enviar solicitud';
+          el('spec-submit-feedback').textContent =
+            'No se pudo enviar la solicitud. Intentá nuevamente.';
+          return;
+        }
+        el('spec-wizard-stage').innerHTML =
+          '<section class="spec-result-card spec-result-wide">' +
+          '<h2 class="spec-result-heading">Proyecto enviado</h2>' +
+          '<p class="spec-muted">Tu proyecto fue submitido. Te avisaremos cuando sea aprobado para su implementación.</p>' +
+          '<div class="spec-wizard-actions">' +
+          '<a class="btn btn-primary" href="tracker.html">Ir a Proyectos</a>' +
+          '<button type="button" class="btn btn-outline" id="spec-send-another">Crear otra solicitud</button>' +
+          '</div>' +
+          '</section>';
+        var again = el('spec-send-another');
+        if (again) {
+          again.addEventListener('click', function () {
+            resetToPick();
+          });
+        }
+      });
+    });
   }
 
   function init() {

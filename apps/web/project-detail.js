@@ -1187,6 +1187,9 @@
     };
 
     var metrics = TS.activityProjectMetrics(project.activities, project.id);
+    var companyName = project.companyName || project.client || '—';
+    var contactName = project.contactName || '—';
+    var contactEmail = project.contactEmail || '—';
 
     var activitiesRows = (project.activities || [])
       .map(function (a, idx) {
@@ -1264,6 +1267,26 @@
         : '<p class="project-muted">No hay casos UAT asociados a este proyecto (<code>projectId</code> en <code>data/uat.json</code>).</p>') +
       '</section>';
 
+    var internalSpecBlock = '';
+    if (project.specMarkdown || project.cursorPrompt) {
+      internalSpecBlock =
+        '<section class="project-section" id="especificacion-interna">' +
+        '<h2 class="project-section-title">Especificación interna</h2>' +
+        (project.specMarkdown
+          ? '<h3 class="spec-result-subheading">Especificación (Markdown)</h3>' +
+            '<pre class="spec-pre">' +
+            TS.escapeHtml(project.specMarkdown) +
+            '</pre>'
+          : '') +
+        (project.cursorPrompt
+          ? '<h3 class="spec-result-subheading">Prompt de Cursor</h3>' +
+            '<textarea class="spec-textarea" rows="12" readonly>' +
+            TS.escapeHtml(project.cursorPrompt) +
+            '</textarea>'
+          : '') +
+        '</section>';
+    }
+
     root.innerHTML =
       '<nav class="project-breadcrumb" aria-label="Migas de pan">' +
       '<a href="tracker.html">Proyectos</a>' +
@@ -1279,8 +1302,14 @@
       '<h1 class="project-detail-title">' +
       TS.escapeHtml(project.name) +
       '</h1>' +
-      '<p class="project-detail-client"><strong>Cliente:</strong> ' +
-      TS.escapeHtml(project.client) +
+      '<p class="project-detail-client"><strong>Empresa:</strong> ' +
+      TS.escapeHtml(companyName) +
+      '</p>' +
+      '<p class="project-detail-client"><strong>Persona:</strong> ' +
+      TS.escapeHtml(contactName) +
+      '</p>' +
+      '<p class="project-detail-client"><strong>Email:</strong> ' +
+      TS.escapeHtml(contactEmail) +
       '</p>' +
       '<p class="project-detail-status-wrap">Estado: <span class="tracker-status ' +
       TS.statusClass(project.status) +
@@ -1333,6 +1362,7 @@
       (milestonesList || '<li>Sin milestones definidos.</li>') +
       '</ul>' +
       '</section>' +
+      internalSpecBlock +
       uatBlock;
 
     var nav = document.getElementById('project-section-nav');

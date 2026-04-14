@@ -6,7 +6,7 @@
 
   var PROJECT_STATUSES = [
     'Planificación',
-    'Pendiente Aprobación',
+    'Pendiente de aprobación',
     'En desarrollo',
     'UAT',
     'Producción',
@@ -129,6 +129,9 @@
       return;
     }
     projects.forEach(function (p) {
+      var company = p.companyName || p.client || '—';
+      var contactName = p.contactName || '—';
+      var contactEmail = p.contactEmail || '—';
       var a = document.createElement('article');
       a.className = 'tracker-card';
       a.setAttribute('data-project-id', p.id);
@@ -151,9 +154,9 @@
         TS.escapeHtml(p.name) +
         '</a>' +
         '</h2>' +
-        '<p class="tracker-client"><strong>Cliente:</strong> ' +
-        TS.escapeHtml(p.client) +
-        '</p>' +
+        '<p class="tracker-client"><strong>Empresa:</strong> ' + TS.escapeHtml(company) + '</p>' +
+        '<p class="tracker-client"><strong>Persona:</strong> ' + TS.escapeHtml(contactName) + '</p>' +
+        '<p class="tracker-client"><strong>Email:</strong> ' + TS.escapeHtml(contactEmail) + '</p>' +
         '<div class="tracker-card-actions">' +
         '<a class="btn btn-outline btn-sm tracker-open-btn" href="project.html?id=' +
         encodeURIComponent(p.id) +
