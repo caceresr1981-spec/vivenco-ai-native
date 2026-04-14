@@ -98,3 +98,54 @@ Detalle en **[TRACKING.md](TRACKING.md)**.
 ## Contenido del marketing (index)
 
 Hero, soluciones, AI-native, demos, casos de uso, metodología, ofertas y CTAs — ver `apps/web/index.html` y `styles.css`.
+
+## Workflow de ramas (staging / production)
+
+Modelo recomendado:
+
+- `main`: rama de produccion (solo cambios listos para release).
+- `staging`: rama de integracion y validacion previa.
+- `feature/*`, `fix/*`, `hotfix/*`: ramas de trabajo.
+
+Flujo normal por cada cambio:
+
+```bash
+# 1) partir desde staging actualizado
+git checkout staging
+git pull origin staging
+
+# 2) crear rama de trabajo
+git checkout -b feature/nombre-cambio
+
+# 3) desarrollar y commitear
+git add .
+git commit -m "feat: descripcion corta"
+
+# 4) subir rama y abrir PR hacia staging
+git push -u origin feature/nombre-cambio
+gh pr create --base staging --head feature/nombre-cambio
+```
+
+Release a produccion:
+
+```bash
+# Cuando staging ya esta validado por QA/UAT
+gh pr create --base main --head staging
+```
+
+Buenas practicas:
+
+- Evitar push directo a `main` y `staging`; usar PR.
+- Esperar checks requeridos (`lint`, `test`, `build`) antes de merge.
+- Para urgencias, usar `hotfix/*` desde `main`, mergear a `main` y luego sincronizar tambien en `staging`.
+
+## Deploy por entorno
+
+Se agregaron workflows de despliegue por rama:
+
+- `.github/workflows/deploy-staging.yml` -> despliegue de `staging`
+- `.github/workflows/deploy-production.yml` -> despliegue de `main`
+
+Configuracion de secretos/variables y pasos de Vercel/Railway en:
+
+- `DEPLOY_ENVIRONMENTS.md`
