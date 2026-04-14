@@ -1041,7 +1041,7 @@
       .slice(0, 40);
   }
 
-  function makeSubmissionProject(product, companyName, personName, email, computed, specMd, cursorPrompt) {
+  function makeSubmissionProject(product, companyName, personName, email, computed, estimation, specMd, cursorPrompt) {
     var stamp = Date.now().toString().slice(-6);
     var baseName = state.customSolutionName || product.name || 'proyecto';
     var pid = 'req-' + toSlug(baseName || 'proyecto') + '-' + stamp;
@@ -1061,6 +1061,7 @@
       contactEmail: email,
       summary:
         'Solicitud generada desde Asistente de especificación. Estado inicial pendiente de aprobación para implementación.',
+      wizardEstimation: estimation,
       specMarkdown: specMd,
       cursorPrompt: cursorPrompt,
       activities: [
@@ -1142,6 +1143,50 @@
       })
       .join('');
 
+    var initialComputed = computeFromReview(product, {
+      maturityKey: review.maturityKey,
+      selectedQuestions: review.selectedQuestions
+    });
+
+    function effortPreviewHtml(computed) {
+      var mvpTotal = totalHours(computed.phases);
+      var demoTotal = demoHours(mvpTotal);
+      var demoPhases = distributeDemo(computed.phases, demoTotal, mvpTotal);
+      var rowsPhases = PHASE_KEYS.map(function (k) {
+        return (
+          '<tr><td>' +
+          esc(PHASE_LABELS[k]) +
+          '</td><td class="num">' +
+          esc(fmtHoursDays(computed.phases[k])) +
+          '</td><td class="num">' +
+          esc(fmtHoursDays(demoPhases[k])) +
+          '</td></tr>'
+        );
+      }).join('');
+      return (
+        '<div class="spec-result-grid">' +
+        '<section class="spec-result-card">' +
+        '<h3 class="spec-result-heading">Esfuerzo estimado</h3>' +
+        '<ul class="spec-result-stats">' +
+        '<li><span>Horas MVP</span><strong>' + esc(fmtHoursDays(mvpTotal)) + '</strong></li>' +
+        '<li><span>Horas demo</span><strong>' + esc(fmtHoursDays(demoTotal)) + '</strong></li>' +
+        '<li><span>Calendario demo (~32 h/sem)</span><strong>~' + weeksAt(demoTotal, 32) + ' sem</strong></li>' +
+        '<li><span>Calendario MVP (~32 h/sem)</span><strong>~' + weeksAt(mvpTotal, 32) + ' sem</strong></li>' +
+        '</ul>' +
+        '</section>' +
+        '<section class="spec-result-card">' +
+        '<h3 class="spec-result-heading">Breakdown por fase</h3>' +
+        '<div class="table-wrap"><table class="detail-table spec-hours-table">' +
+        '<thead><tr><th>Fase</th><th class="num">MVP (h/d)</th><th class="num">Demo (h/d)</th></tr></thead>' +
+        '<tbody>' + rowsPhases +
+        '<tr class="spec-hours-total"><td><strong>Total</strong></td><td class="num"><strong>' +
+        esc(fmtHoursDays(mvpTotal)) + '</strong></td><td class="num"><strong>' + esc(fmtHoursDays(demoTotal)) +
+        '</strong></td></tr></tbody></table></div>' +
+        '</section>' +
+        '</div>'
+      );
+    }
+
     el('spec-wizard-stage').innerHTML =
       '<section class="spec-result-card spec-result-wide">' +
       '<h2 class="spec-result-heading">Revisión final antes de enviar</h2>' +
@@ -1174,6 +1219,9 @@
       '</select>' +
       rows +
       '</div>' +
+      '<div id="spec-effort-preview">' +
+      effortPreviewHtml(initialComputed) +
+      '</div>' +
       '<p id="spec-submit-feedback" class="spec-muted" aria-live="polite"></p>' +
       '<div class="spec-wizard-actions">' +
       '<button type="button" class="btn btn-primary" id="spec-submit-project">Enviar solicitud</button>' +
@@ -1183,6 +1231,33 @@
 
     el('spec-cancel-project').addEventListener('click', function () {
       resetToPick();
+    });
+
+    function readComputedFromReviewInputs() {
+      var maturityKey = el('spec-review-maturity').value || 'mvp';
+      var selectedQuestions = qs.map(function (q, idx) {
+        var sel = el('spec-review-q-' + idx);
+        var optionIndex = sel ? parseInt(sel.value, 10) : 0;
+        if (isNaN(optionIndex) || optionIndex < 0 || optionIndex >= q.options.length) optionIndex = 0;
+        return { q: q, optionIndex: optionIndex };
+      });
+      return computeFromReview(product, {
+        maturityKey: maturityKey,
+        selectedQuestions: selectedQuestions
+      });
+    }
+
+    function refreshEffortPreview() {
+      var computed = readComputedFromReviewInputs();
+      var box = el('spec-effort-preview');
+      if (box) box.innerHTML = effortPreviewHtml(computed);
+    }
+
+    var maturitySel = el('spec-review-maturity');
+    if (maturitySel) maturitySel.addEventListener('change', refreshEffortPreview);
+    qs.forEach(function (_, idx) {
+      var qSel = el('spec-review-q-' + idx);
+      if (qSel) qSel.addEventListener('change', refreshEffortPreview);
     });
 
     el('spec-submit-project').addEventListener('click', function () {
@@ -1199,18 +1274,7 @@
         return;
       }
 
-      var maturityKey = el('spec-review-maturity').value || 'mvp';
-      var selectedQuestions = qs.map(function (q, idx) {
-        var sel = el('spec-review-q-' + idx);
-        var optionIndex = sel ? parseInt(sel.value, 10) : 0;
-        if (isNaN(optionIndex) || optionIndex < 0 || optionIndex >= q.options.length) optionIndex = 0;
-        return { q: q, optionIndex: optionIndex };
-      });
-
-      var computed = computeFromReview(product, {
-        maturityKey: maturityKey,
-        selectedQuestions: selectedQuestions
-      });
+      var computed = readComputedFromReviewInputs();
       state.maturityChoice = computed.maturityKey;
       state.answers = computed.answers;
       state.phases = computed.phases;
@@ -1220,6 +1284,7 @@
 
       var mvpTotal = totalHours(computed.phases);
       var demoTotal = demoHours(mvpTotal);
+      var demoPhases = distributeDemo(computed.phases, demoTotal, mvpTotal);
       var specMd = buildSpec(product, computed.answers);
       var cursorPrompt = buildCursorPrompt(
         product,
@@ -1229,12 +1294,24 @@
         demoTotal,
         computed.maturityKey
       );
+      var estimation = {
+        hoursMvpByPhase: computed.phases,
+        hoursMvpTotal: mvpTotal,
+        hoursDemoByPhase: demoPhases,
+        hoursDemoTotal: demoTotal,
+        daysMvpByPhase: PHASE_KEYS.reduce(function (acc, k) { acc[k] = workDaysFromHours(computed.phases[k]); return acc; }, {}),
+        daysDemoByPhase: PHASE_KEYS.reduce(function (acc, k) { acc[k] = workDaysFromHours(demoPhases[k]); return acc; }, {}),
+        daysMvpTotal: workDaysFromHours(mvpTotal),
+        daysDemoTotal: workDaysFromHours(demoTotal),
+        hoursPerWorkday: HOURS_PER_WORKDAY
+      };
       var project = makeSubmissionProject(
         product,
         companyName,
         personName,
         email,
         computed,
+        estimation,
         specMd,
         cursorPrompt
       );

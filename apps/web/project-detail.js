@@ -175,6 +175,13 @@
     return TS.escapeHtml(String(total)) + ' h';
   }
 
+  function fmtHoursDays(hours, perDay) {
+    var h = Number(hours) || 0;
+    var dayBase = perDay || 8;
+    var d = h > 0 ? Math.ceil(h / dayBase) : 0;
+    return String(h) + ' h' + (d > 0 ? ' (~' + String(d) + ' días)' : '');
+  }
+
   function syncActivityModalSelects() {
     var root = document.getElementById('activity-modal-body');
     if (!root) return;
@@ -1267,6 +1274,47 @@
         : '<p class="project-muted">No hay casos UAT asociados a este proyecto (<code>projectId</code> en <code>data/uat.json</code>).</p>') +
       '</section>';
 
+    var wizardEstimationBlock = '';
+    if (project.wizardEstimation && project.wizardEstimation.hoursMvpByPhase) {
+      var est = project.wizardEstimation;
+      var labels = {
+        discovery: 'Discovery y modelado',
+        backend: 'API + datos (Railway / Postgres)',
+        frontend: 'Interfaz web (Vercel)',
+        devops: 'Docker, entornos y despliegue',
+        integrations: 'Integraciones y APIs externas',
+        qa: 'Pruebas, hardening y documentación'
+      };
+      var keys = ['discovery', 'backend', 'frontend', 'devops', 'integrations', 'qa'];
+      var rows = keys
+        .map(function (k) {
+          return (
+            '<tr><td>' +
+            TS.escapeHtml(labels[k] || k) +
+            '</td><td class="num">' +
+            TS.escapeHtml(fmtHoursDays(est.hoursMvpByPhase[k], est.hoursPerWorkday || 8)) +
+            '</td><td class="num">' +
+            TS.escapeHtml(fmtHoursDays(est.hoursDemoByPhase && est.hoursDemoByPhase[k], est.hoursPerWorkday || 8)) +
+            '</td></tr>'
+          );
+        })
+        .join('');
+      wizardEstimationBlock =
+        '<section class="project-section" id="estimacion">' +
+        '<h2 class="project-section-title">Estimación inicial (asistente)</h2>' +
+        '<div class="table-wrap"><table class="detail-table spec-hours-table">' +
+        '<thead><tr><th>Fase</th><th class="num">MVP (h/d)</th><th class="num">Demo (h/d)</th></tr></thead>' +
+        '<tbody>' +
+        rows +
+        '<tr class="spec-hours-total"><td><strong>Total</strong></td><td class="num"><strong>' +
+        TS.escapeHtml(fmtHoursDays(est.hoursMvpTotal, est.hoursPerWorkday || 8)) +
+        '</strong></td><td class="num"><strong>' +
+        TS.escapeHtml(fmtHoursDays(est.hoursDemoTotal, est.hoursPerWorkday || 8)) +
+        '</strong></td></tr>' +
+        '</tbody></table></div>' +
+        '</section>';
+    }
+
     var internalSpecBlock = '';
     if (project.specMarkdown || project.cursorPrompt) {
       internalSpecBlock =
@@ -1362,6 +1410,7 @@
       (milestonesList || '<li>Sin milestones definidos.</li>') +
       '</ul>' +
       '</section>' +
+      wizardEstimationBlock +
       internalSpecBlock +
       uatBlock;
 
