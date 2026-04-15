@@ -1,6 +1,56 @@
 (function () {
   'use strict';
 
+  var THEME_KEY = 'vivenco-theme';
+
+  function applyTheme(mode) {
+    var isLight = mode === 'light';
+    document.body.classList.toggle('theme-light', isLight);
+    document.body.classList.toggle('theme-dark', !isLight);
+    document.documentElement.style.colorScheme = isLight ? 'light' : 'dark';
+  }
+
+  function initThemeToggle() {
+    var saved = null;
+    try {
+      saved = localStorage.getItem(THEME_KEY);
+    } catch (e) {}
+    var mode = saved === 'light' ? 'light' : 'dark';
+    applyTheme(mode);
+
+    var headerInner = document.querySelector('.header .header-inner');
+    if (!headerInner) return;
+    var menuBtn = headerInner.querySelector('.menu-toggle');
+    var wrap = document.createElement('div');
+    wrap.className = 'theme-toggle-wrap';
+    wrap.innerHTML =
+      '<button type="button" class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema claro/oscuro" aria-pressed="' +
+      String(mode === 'light') +
+      '">' +
+      '<span class="theme-toggle-track" aria-hidden="true"><span class="theme-toggle-thumb"></span></span>' +
+      '<span class="theme-toggle-label">Contraste claro</span>' +
+      '</button>';
+    if (menuBtn && menuBtn.parentNode === headerInner) {
+      headerInner.insertBefore(wrap, menuBtn);
+    } else {
+      headerInner.appendChild(wrap);
+    }
+
+    var btn = wrap.querySelector('#theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var isLight = document.body.classList.contains('theme-light');
+      var next = isLight ? 'dark' : 'light';
+      applyTheme(next);
+      btn.setAttribute('aria-pressed', String(next === 'light'));
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {}
+    });
+  }
+
+  initThemeToggle();
+
   // Modal diagnóstico: abrir al hacer clic en enlaces #diagnostico
   var modal = document.getElementById('diagnostico');
   if (modal) {
