@@ -8,6 +8,28 @@
     document.body.classList.toggle('theme-light', isLight);
     document.body.classList.toggle('theme-dark', !isLight);
     document.documentElement.style.colorScheme = isLight ? 'light' : 'dark';
+    syncThemeBackgroundVideos(isLight ? 'light' : 'dark');
+  }
+
+  function syncThemeBackgroundVideos(mode) {
+    var useDarkVideo = mode === 'dark';
+    var targetSrc = useDarkVideo ? 'assets/videos/BG9.mkv' : 'assets/videos/BG3.mp4';
+    var targetType = useDarkVideo ? 'video/x-matroska' : 'video/mp4';
+    document.querySelectorAll('.hero-video, .page-compare-video').forEach(function (video) {
+      var source = video.querySelector('source');
+      if (!source) {
+        source = document.createElement('source');
+        video.appendChild(source);
+      }
+      if (source.getAttribute('src') === targetSrc && source.getAttribute('type') === targetType) return;
+      source.setAttribute('src', targetSrc);
+      source.setAttribute('type', targetType);
+      try {
+        video.load();
+        var p = video.play();
+        if (p && typeof p.catch === 'function') p.catch(function () {});
+      } catch (e) {}
+    });
   }
 
   function initThemeToggle() {
