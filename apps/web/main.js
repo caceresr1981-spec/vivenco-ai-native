@@ -49,7 +49,22 @@
     });
   }
 
+  function tuneBackgroundVideos() {
+    var prefersReducedMotion = false;
+    try {
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (prefersReducedMotion) return;
+    document.querySelectorAll('.hero-video, .page-compare-video').forEach(function (video) {
+      try {
+        video.defaultPlaybackRate = 1;
+        video.playbackRate = 1;
+      } catch (e) {}
+    });
+  }
+
   initThemeToggle();
+  tuneBackgroundVideos();
 
   // Modal diagnóstico: abrir al hacer clic en enlaces #diagnostico
   var modal = document.getElementById('diagnostico');
@@ -369,14 +384,18 @@
     }
     applyCarouselSlide(initialSlide);
 
-    // Si se llega con hash desde la navbar (otra página), mostrar el sitio completo para evitar cortes del carrusel.
-    if (hash && hash !== '#diagnostico') {
+    // Si se llega con hash desde otra página:
+    // - #porque-nosotros / #soluciones deben respetar formato carrusel (slide 2/3)
+    // - otros anchors fuera del carrusel pueden abrir el sitio completo.
+    if (hash && hash !== '#diagnostico' && hash !== '#porque-nosotros' && hash !== '#soluciones') {
       var target = document.getElementById(hash.slice(1));
       if (target) {
-        unlockHomeCarousel();
-        window.setTimeout(function () {
-          target.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }, 0);
+        if (!homeCarousel.contains(target)) {
+          unlockHomeCarousel();
+          window.setTimeout(function () {
+            target.scrollIntoView({ behavior: 'auto', block: 'start' });
+          }, 0);
+        }
       }
     }
   }

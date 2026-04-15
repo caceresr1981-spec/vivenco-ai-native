@@ -34,43 +34,43 @@
     {
       id: 'erp-light',
       name: 'ERP / inventario y compras (ligero)',
-      blurb: 'Stock, órdenes de compra, catálogo y reportes operativos.',
+      blurb: 'Controla stock, compras y catálogo con trazabilidad real para reducir quiebres, ordenar reposición y mejorar decisiones operativas desde la primera iteración.',
       baseHours: { discovery: 18, backend: 44, frontend: 52, devops: 14, integrations: 22, qa: 26 }
     },
     {
       id: 'crm-sales',
       name: 'CRM y pipeline comercial',
-      blurb: 'Contactos, oportunidades, secuencias y tablero de ventas.',
+      blurb: 'Centraliza contactos y oportunidades con automatizaciones comerciales para acelerar seguimiento, elevar tasa de cierre y dar visibilidad al equipo.',
       baseHours: { discovery: 14, backend: 36, frontend: 48, devops: 12, integrations: 28, qa: 22 }
     },
     {
       id: 'wms-oms',
       name: 'WMS / OMS logístico',
-      blurb: 'Movimientos de almacén, pedidos multicanal y trazabilidad.',
+      blurb: 'Sincroniza almacén y pedidos multicanal con trazabilidad end-to-end para bajar errores de preparación y mejorar tiempos de despacho.',
       baseHours: { discovery: 22, backend: 52, frontend: 44, devops: 16, integrations: 32, qa: 28 }
     },
     {
       id: 'bpm-auto',
       name: 'BPM y automatización de procesos',
-      blurb: 'Flujos de aprobación, tareas y notificaciones.',
+      blurb: 'Digitaliza flujos de aprobación y tareas con reglas de negocio claras para eliminar cuellos de botella y escalar procesos sin fricción.',
       baseHours: { discovery: 20, backend: 40, frontend: 40, devops: 12, integrations: 36, qa: 24 }
     },
     {
       id: 'bi-dashboard',
       name: 'BI y dashboards',
-      blurb: 'KPIs, agregaciones y visualización sobre tus fuentes de datos.',
+      blurb: 'Convierte datos dispersos en KPIs accionables con dashboards orientados a decisión, alertas tempranas y foco en impacto de negocio.',
       baseHours: { discovery: 16, backend: 38, frontend: 56, devops: 10, integrations: 30, qa: 22 }
     },
     {
       id: 'api-integration',
       name: 'APIs e integraciones',
-      blurb: 'Servicios REST, webhooks, ETL liviano y conectores.',
+      blurb: 'Conecta sistemas internos y externos con APIs, webhooks y ETL ligero para eliminar silos, automatizar intercambio y mejorar consistencia de datos.',
       baseHours: { discovery: 12, backend: 48, frontend: 24, devops: 14, integrations: 52, qa: 22 }
     },
     {
       id: 'custom',
       name: 'Personalizado',
-      blurb: 'Indicále a nuestro asistente qué estás buscando',
+      blurb: 'Define una solución a medida guiada por historia de usuario y objetivos de negocio para transformar tu necesidad en un plan técnico ejecutable.',
       baseHours: { discovery: 20, backend: 40, frontend: 40, devops: 14, integrations: 30, qa: 24 }
     }
   ];
@@ -309,6 +309,17 @@
 
   function el(id) {
     return document.getElementById(id);
+  }
+
+  function clearProductPickGrid() {
+    var host = el('spec-wizard-products');
+    if (host) host.innerHTML = '';
+  }
+
+  function setStageLeadMode(enabled) {
+    var stage = el('spec-wizard-stage');
+    if (!stage || !stage.classList) return;
+    stage.classList.toggle('spec-wizard-stage--lead', !!enabled);
   }
 
   function esc(s) {
@@ -586,8 +597,12 @@
   }
 
   function renderPick() {
+    setStageLeadMode(true);
     el('spec-wizard-stage').innerHTML =
-      '<p class="spec-wizard-lead">Elegí el tipo de solución. Nuestro asistente te hará preguntas de negocio y operación (opción múltiple) para definir las especificaciones técnicas con la proyección de tiempos para tu demo y el producto final.</p>' +
+      '<p class="spec-wizard-lead">Elegí el tipo de solución. Nuestro asistente te hará preguntas de negocio y operación (opción múltiple) para definir las especificaciones técnicas con la proyección de tiempos para tu demo y el producto final.</p>';
+    var productsHost = el('spec-wizard-products');
+    if (productsHost) {
+      productsHost.innerHTML =
       '<div class="spec-product-grid">' +
       PRODUCTS.map(function (p) {
         return (
@@ -604,7 +619,9 @@
         );
       }).join('') +
       '</div>';
-    el('spec-wizard-stage').querySelectorAll('.spec-product-card').forEach(function (btn) {
+    }
+    var pickScope = productsHost || el('spec-wizard-stage');
+    pickScope.querySelectorAll('.spec-product-card').forEach(function (btn) {
       btn.addEventListener('click', function () {
         startFlow(btn.getAttribute('data-product-id'));
       });
@@ -686,6 +703,8 @@
   }
 
   function renderCustomStory() {
+    setStageLeadMode(false);
+    clearProductPickGrid();
     var product = PRODUCTS.filter(function (p) {
       return p.id === 'custom';
     })[0];
@@ -777,6 +796,8 @@
   }
 
   function renderMaturity() {
+    setStageLeadMode(false);
+    clearProductPickGrid();
     var product = PRODUCTS.filter(function (p) {
       return p.id === state.productId;
     })[0];
@@ -854,6 +875,8 @@
   }
 
   function renderQuestion() {
+    setStageLeadMode(false);
+    clearProductPickGrid();
     var product = PRODUCTS.filter(function (p) {
       return p.id === state.productId;
     })[0];
@@ -1105,6 +1128,8 @@
   }
 
   function finishFlow(product, qs) {
+    setStageLeadMode(false);
+    clearProductPickGrid();
     state.step = 'done';
     el('spec-wizard-progress-bar').style.width = '100%';
     el('spec-wizard-progress-text').textContent = 'Revisión final';
