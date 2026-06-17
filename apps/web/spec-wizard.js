@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var STACK = 'Cursor (IDE + agentes) · Docker (contenedores locales/CI) · Railway (API + Postgres) · Vercel (web estática/Next.js)';
+  var STACK = 'Cursor (IDE + agentes) · Docker (contenedores locales/CI) · Railway (API + Postgres) · Cloudflare R2 (assets y media) · Vercel (web estática/Next.js)';
 
   var MATURITY_PROFILES = {
     mvp: {

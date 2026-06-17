@@ -1036,6 +1036,7 @@ body.theme-light .theme-toggle-thumb {
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .container {
   display: flex;
   flex-direction: column;
+  max-width: min(1280px, 98vw);
 }
 
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .ai-advantage-cta-row {
@@ -1466,7 +1467,6 @@ body.theme-light .theme-toggle-thumb {
 }
 
 .home-carousel--unlocked .home-carousel-dots,
-.home-carousel--unlocked .home-carousel-hint,
 .home-carousel--unlocked .home-carousel-nav {
   display: none;
 }
@@ -1555,21 +1555,6 @@ body.theme-light .theme-toggle-thumb {
     0 0 18px rgba(125, 211, 252, 0.38);
 }
 
-.home-carousel-hint {
-  position: absolute;
-  bottom: 3.15rem;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  z-index: 6;
-  pointer-events: none;
-  animation: home-carousel-hint-pulse 2.4s ease-in-out infinite;
-}
-
 @keyframes page-exit-slide-down {
   0% {
     transform: translateY(0);
@@ -1587,16 +1572,6 @@ body.page-exit-down {
 
 body.page-exit-down main {
   animation: page-exit-slide-down 0.46s ease forwards;
-}
-
-@keyframes home-carousel-hint-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.95;
-  }
 }
 
 .home-carousel-dots {
@@ -1629,11 +1604,6 @@ body.page-exit-down main {
 @media (prefers-reduced-motion: reduce) {
   .home-carousel-track {
     transition-duration: 0.01ms;
-  }
-
-  .home-carousel-hint {
-    animation: none;
-    opacity: 0.75;
   }
 
   .home-carousel .hero .hero-subtitle .speed-highlight .speed-highlight-inner {
@@ -1763,11 +1733,425 @@ body.page-exit-down main {
   padding-top: 1.25rem;
 }
 
-.ai-tools {
+.home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .section-title {
+  margin-bottom: 0.65rem;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .section-intro {
+  margin-bottom: 0.75rem;
+  padding: 0.8rem 1rem;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .dev-workflow-figure {
+  flex: 0 0 auto;
+  width: min(94vw, 1280px);
+  max-width: min(94vw, 1280px);
+  height: auto;
+  margin: 0 auto 0.85rem;
+  margin-left: calc(50% - min(47vw, 640px));
+  padding: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38);
+  background: #0f141c;
+  line-height: normal;
+}
+
+.dev-workflow-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.dev-workflow {
+  padding: 1rem 0.9rem 0.8rem;
+  background: linear-gradient(180deg, #121722 0%, #0d1118 100%);
+}
+
+.dev-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.dev-workflow-step {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0.7rem 0.62rem 0.58rem;
+  border-radius: 11px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(180deg, rgba(28, 34, 48, 0.95) 0%, rgba(18, 22, 32, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dev-workflow-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.4rem;
+}
+
+.dev-workflow-step-num {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #0f172a;
+  background: #e2e8f0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+}
+
+.dev-workflow-step-kind {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: rgba(148, 163, 184, 0.78);
+  letter-spacing: 0.02em;
+}
+
+.dev-workflow-step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.1rem;
+  margin: 0.2rem 0 0.5rem;
+  font-size: 2.45rem;
+  line-height: 1;
+  opacity: 0.95;
+}
+
+.dev-workflow-step-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1 1 auto;
+}
+
+.dev-workflow-step-points li {
+  position: relative;
+  padding-left: 0.68rem;
+  margin-bottom: 0.32rem;
+  font-size: 0.78rem;
+  line-height: 1.38;
+  color: #cbd5e1;
+}
+
+.dev-workflow-step-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 0.24rem;
+  height: 0.24rem;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.dev-workflow-step-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto 0 0;
+  margin-top: 0.5rem;
+  padding: 0.58rem 0.45rem;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.9) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.dev-workflow-step-foot-name {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: inherit;
+}
+
+.dev-workflow-step--cursor .dev-workflow-step-foot {
+  color: #ede9fe;
+  background: linear-gradient(145deg, rgba(91, 33, 182, 0.42) 0%, rgba(46, 16, 101, 0.72) 100%);
+  border-color: rgba(167, 139, 250, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(139, 92, 246, 0.2);
+}
+
+.dev-workflow-step--github .dev-workflow-step-foot {
+  color: #dbeafe;
+  background: linear-gradient(145deg, rgba(29, 78, 216, 0.4) 0%, rgba(15, 37, 99, 0.72) 100%);
+  border-color: rgba(96, 165, 250, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(59, 130, 246, 0.18);
+}
+
+.dev-workflow-step--docker .dev-workflow-step-foot {
+  color: #cffafe;
+  background: linear-gradient(145deg, rgba(8, 145, 178, 0.42) 0%, rgba(12, 74, 110, 0.72) 100%);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(6, 182, 212, 0.18);
+}
+
+.dev-workflow-step--railway .dev-workflow-step-foot {
+  color: #ede9fe;
+  background: linear-gradient(145deg, rgba(109, 40, 217, 0.42) 0%, rgba(49, 18, 94, 0.72) 100%);
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(124, 58, 237, 0.2);
+}
+
+.dev-workflow-step--r2 .dev-workflow-step-foot {
+  color: #ffedd5;
+  background: linear-gradient(145deg, rgba(234, 88, 12, 0.42) 0%, rgba(124, 45, 18, 0.72) 100%);
+  border-color: rgba(251, 146, 60, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 16px rgba(249, 115, 22, 0.18);
+}
+
+.dev-workflow-step--vercel .dev-workflow-step-foot {
+  color: #f8fafc;
+  background: linear-gradient(145deg, rgba(71, 85, 105, 0.55) 0%, rgba(15, 23, 42, 0.88) 100%);
+  border-color: rgba(226, 232, 240, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 8px 18px rgba(0, 0, 0, 0.28),
+    0 0 14px rgba(148, 163, 184, 0.14);
+}
+
+.dev-workflow-step--cursor {
+  color: #c4b5fd;
+  border-top: 2px solid #8b5cf6;
+}
+
+.dev-workflow-step--cursor .dev-workflow-step-num {
+  color: #5b21b6;
+  background: #ede9fe;
+}
+
+.dev-workflow-step--github {
+  color: #93c5fd;
+  border-top: 2px solid #3b82f6;
+}
+
+.dev-workflow-step--github .dev-workflow-step-num {
+  color: #3b82f6;
+  background: #dbeafe;
+}
+
+.dev-workflow-step--docker {
+  color: #67e8f9;
+  border-top: 2px solid #06b6d4;
+}
+
+.dev-workflow-step--docker .dev-workflow-step-num {
+  color: #0891b2;
+  background: #cffafe;
+}
+
+.dev-workflow-step--railway {
+  color: #c4b5fd;
+  border-top: 2px solid #7c3aed;
+}
+
+.dev-workflow-step--railway .dev-workflow-step-num {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+
+.dev-workflow-step--r2 {
+  color: #fdba74;
+  border-top: 2px solid #f97316;
+}
+
+.dev-workflow-step--r2 .dev-workflow-step-num {
+  color: #ea580c;
+  background: #ffedd5;
+}
+
+.dev-workflow-step--vercel {
+  color: #e2e8f0;
+  border-top: 2px solid #f8fafc;
+}
+
+.dev-workflow-step--vercel .dev-workflow-step-num {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.dev-workflow-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem 0.7rem;
+  margin-top: 0.55rem;
+  padding: 0.45rem 0.5rem 0.15rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.dev-workflow-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.dev-workflow-legend-item::before {
+  content: '';
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dev-workflow-legend-item--blue {
+  color: #7c9ccd;
+}
+
+.dev-workflow-legend-item--green {
+  color: #5eead4;
+}
+
+.dev-workflow-legend-item--amber {
+  color: #fbbf24;
+}
+
+.dev-workflow-legend-title {
+  flex: 0 0 100%;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.dev-workflow-figure {
+  margin: 1.25rem auto 1.75rem;
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: #0f141c;
+  line-height: normal;
+}
+
+body.theme-light .dev-workflow-figure,
+body.theme-light .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .dev-workflow-figure {
+  border-color: rgba(47, 87, 164, 0.28);
+  box-shadow: 0 16px 42px rgba(15, 35, 67, 0.16);
+  background: #0f141c;
+}
+
+body.theme-light .dev-workflow-step-foot {
+  color: #0f2343;
+  background: linear-gradient(145deg, rgba(232, 239, 253, 0.95) 0%, rgba(210, 224, 248, 0.92) 100%);
+  border-color: rgba(47, 87, 164, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) inset, 0 6px 14px rgba(15, 35, 67, 0.1);
+}
+
+body.theme-light .dev-workflow-step--cursor .dev-workflow-step-foot {
+  color: #4c1d95;
+  background: linear-gradient(145deg, #ede9fe 0%, #ddd6fe 100%);
+  border-color: rgba(124, 58, 237, 0.28);
+}
+
+body.theme-light .dev-workflow-step--github .dev-workflow-step-foot {
+  color: #1e3a8a;
+  background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+body.theme-light .dev-workflow-step--docker .dev-workflow-step-foot {
+  color: #155e75;
+  background: linear-gradient(145deg, #cffafe 0%, #a5f3fc 100%);
+  border-color: rgba(8, 145, 178, 0.28);
+}
+
+body.theme-light .dev-workflow-step--railway .dev-workflow-step-foot {
+  color: #5b21b6;
+  background: linear-gradient(145deg, #ede9fe 0%, #e9d5ff 100%);
+  border-color: rgba(109, 40, 217, 0.28);
+}
+
+body.theme-light .dev-workflow-step--r2 .dev-workflow-step-foot {
+  color: #9a3412;
+  background: linear-gradient(145deg, #ffedd5 0%, #fed7aa 100%);
+  border-color: rgba(234, 88, 12, 0.28);
+}
+
+body.theme-light .dev-workflow-step--vercel .dev-workflow-step-foot {
+  color: #1e293b;
+  background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-color: rgba(71, 85, 105, 0.24);
+}
+
+@media (max-width: 900px) {
+  .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .dev-workflow-figure {
+    width: 92%;
+    max-width: 92%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dev-workflow-figure img {
+    min-width: 720px;
+  }
+
+  .dev-workflow-step-name,
+  .dev-workflow-step-foot-name {
+    font-size: 0.98rem;
+  }
+
+  .dev-workflow-step-kind {
+    font-size: 0.66rem;
+  }
+
+  .dev-workflow-step-icon {
+    font-size: 2.1rem;
+    min-height: 2.7rem;
+  }
+
+  .dev-workflow-step-points li {
+    font-size: 0.72rem;
+  }
 }
 
 .tool-badge {

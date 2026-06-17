@@ -192,7 +192,6 @@
   // Carrusel de introducción (inicio): hero → AI-native → soluciones → sitio completo (adelante / atrás)
   var homeCarousel = document.getElementById('home-carousel');
   if (homeCarousel) {
-    var carouselHint = homeCarousel.querySelector('.home-carousel-hint');
     var carouselPrev = homeCarousel.querySelector('.home-carousel-prev');
     var carouselNext = homeCarousel.querySelector('.home-carousel-next');
     var carouselUnlocked = false;
@@ -203,6 +202,54 @@
     var slide3CtaTimer = null;
     var slideRevealDelayMs = 1500;
 
+    function getCarouselHash(href) {
+      if (!href) return '';
+      var hashIndex = href.indexOf('#');
+      if (hashIndex === -1) return '';
+      return href.slice(hashIndex).split('?')[0];
+    }
+
+    function slideForCarouselHash(hash) {
+      if (hash === '#porque-nosotros') return 1;
+      if (hash === '#soluciones') return 2;
+      return null;
+    }
+
+    function isIndexCarouselLink(anchor) {
+      if (!anchor) return false;
+      var href = anchor.getAttribute('href');
+      if (!href) return false;
+      if (href.charAt(0) === '#') return true;
+      try {
+        var url = new URL(anchor.href, window.location.href);
+        if (url.origin !== window.location.origin) return false;
+        var path = url.pathname.replace(/\\/g, '/');
+        return path === '/' || /\/index\.html$/i.test(path);
+      } catch (e) {
+        return /index\.html/i.test(href);
+      }
+    }
+
+    function scrollCarouselIntoView() {
+      window.scrollTo(0, 0);
+      try {
+        homeCarousel.scrollIntoView({ block: 'start' });
+      } catch (e) {}
+    }
+
+    function goToCarouselSlide(slide) {
+      relockHomeCarousel();
+      applyCarouselSlide(slide);
+      scrollCarouselIntoView();
+    }
+
+    function navigateToCarouselHash(hash) {
+      var slide = slideForCarouselHash(hash);
+      if (slide === null) return false;
+      goToCarouselSlide(slide);
+      return true;
+    }
+
     function setNavActiveForSlide(slide) {
       if (!navEl) return;
       navEl.querySelectorAll('a.nav-link--active').forEach(function (x) {
@@ -211,6 +258,9 @@
       function activate(href) {
         var el = navEl.querySelector('a[href="' + href + '"]');
         if (el) el.classList.add('nav-link--active');
+      }
+      if (slide === 0) {
+        return;
       }
       if (slide === 1) {
         activate('#porque-nosotros');
@@ -270,18 +320,8 @@
       carouselNext.classList.toggle('is-hidden', slide >= maxSlide);
     }
 
-    function updateCarouselHint(slide) {
-      if (!carouselHint) return;
-      if (slide >= maxSlide) {
-        carouselHint.textContent = 'Clic o → para ver el resto del sitio · ← para volver';
-      } else {
-        carouselHint.textContent = 'Clic o → para avanzar · ← o botón para volver';
-      }
-    }
-
     function applyCarouselSlide(slide) {
       homeCarousel.setAttribute('data-slide', String(slide));
-      updateCarouselHint(slide);
       syncCarouselNav();
       setNavActiveForSlide(slide);
       scheduleSlide2Cta(slide);
@@ -337,27 +377,30 @@
       'click',
       function (e) {
         if (!homeCarousel) return;
-        var a = e.target.closest && e.target.closest('a[href^="#"]');
+        var a = e.target.closest && e.target.closest('a[href*="#"]');
         if (!a) return;
         var href = a.getAttribute('href');
         if (!href || href === '#') return;
         if (href === '#diagnostico') return;
 
-        if (href === '#soluciones') {
+        var hash = getCarouselHash(href);
+        if (slideForCarouselHash(hash) !== null && isIndexCarouselLink(a)) {
           e.preventDefault();
-          relockHomeCarousel();
-          applyCarouselSlide(maxSlide);
+          if (hash !== window.location.hash) {
+            try {
+              history.pushState(null, '', hash);
+            } catch (err) {
+              window.location.hash = hash.slice(1);
+            }
+          }
+          navigateToCarouselHash(hash);
           return;
         }
-        if (href === '#porque-nosotros') {
-          e.preventDefault();
-          relockHomeCarousel();
-          applyCarouselSlide(1);
-          return;
-        }
+
         if (carouselUnlocked) return;
 
-        var id = href.slice(1);
+        var id = hash.slice(1);
+        if (!id) return;
         var el = document.getElementById(id);
         if (!el) return;
         if (homeCarousel.contains(el)) return;
@@ -370,6 +413,25 @@
       },
       true
     );
+
+    window.addEventListener('hashchange', function () {
+      if (!homeCarousel) return;
+      navigateToCarouselHash(window.location.hash || '');
+    });
+
+    var logoLink = document.querySelector('.header .logo');
+    if (logoLink && isIndexCarouselLink(logoLink)) {
+      logoLink.addEventListener('click', function (e) {
+        if (!homeCarousel) return;
+        e.preventDefault();
+        try {
+          history.pushState(null, '', window.location.pathname + window.location.search);
+        } catch (err) {
+          window.location.hash = '';
+        }
+        goToCarouselSlide(0);
+      });
+    }
 
     document.addEventListener(
       'click',
@@ -398,21 +460,14 @@
     });
 
     var hash = window.location.hash || '';
-    var initialSlide = 0;
-    if (hash === '#porque-nosotros') {
-      initialSlide = 1;
-    } else if (hash === '#soluciones') {
-      initialSlide = maxSlide;
-    }
-    applyCarouselSlide(initialSlide);
-
-    // Si se llega con hash desde otra página:
-    // - #porque-nosotros / #soluciones deben respetar formato carrusel (slide 2/3)
-    // - otros anchors fuera del carrusel pueden abrir el sitio completo.
-    if (hash && hash !== '#diagnostico' && hash !== '#porque-nosotros' && hash !== '#soluciones') {
-      var target = document.getElementById(hash.slice(1));
-      if (target) {
-        if (!homeCarousel.contains(target)) {
+    var carouselSlide = slideForCarouselHash(hash);
+    if (carouselSlide !== null) {
+      goToCarouselSlide(carouselSlide);
+    } else {
+      applyCarouselSlide(0);
+      if (hash && hash !== '#diagnostico') {
+        var target = document.getElementById(hash.slice(1));
+        if (target && !homeCarousel.contains(target)) {
           unlockHomeCarousel();
           window.setTimeout(function () {
             target.scrollIntoView({ behavior: 'auto', block: 'start' });
