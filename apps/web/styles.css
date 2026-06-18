@@ -422,6 +422,133 @@ body.page-compare > footer {
   }
 }
 
+/* --- Logo intro (index): deletreo + morph al navbar --- */
+body.logo-intro-pending {
+  overflow: hidden;
+}
+
+body.logo-intro-pending .header .logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.logo-intro-pending .home-carousel {
+  visibility: hidden;
+}
+
+.logo-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.logo-intro.is-active {
+  pointer-events: auto;
+}
+
+.logo-intro-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 42%, rgba(122, 154, 184, 0.14), transparent 62%),
+    rgba(8, 11, 18, 0.94);
+  opacity: 1;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo-intro.is-morphing .logo-intro-scrim {
+  opacity: 0;
+}
+
+.logo-intro-stage {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: clamp(2.75rem, 11vw, 5.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+  white-space: nowrap;
+  text-decoration: none;
+  will-change: transform;
+  line-height: 1.1;
+}
+
+.logo-intro-plain,
+.logo-intro-accent {
+  display: inline;
+}
+
+.logo-intro-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.38em);
+  animation: logo-intro-char-in 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logo-intro-char--plain {
+  color: #f1f5f9;
+}
+
+.logo-intro-char--accent {
+  background: linear-gradient(
+    105deg,
+    var(--accent-dark) 0%,
+    var(--accent-deep) 18%,
+    var(--accent) 38%,
+    #b4cce3 50%,
+    var(--accent) 62%,
+    var(--accent-deep) 82%,
+    var(--accent-dark) 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes logo-intro-char-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-intro-stage.is-morphing {
+  z-index: 401;
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-intro {
+    display: none !important;
+  }
+
+  body.logo-intro-pending .header .logo {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.logo-intro-pending .home-carousel {
+    visibility: visible;
+  }
+
+  .logo-intro-stage span {
+    animation: none;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 42%, var(--accent) 100%);
+    background-size: 100% 100%;
+  }
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -736,7 +863,151 @@ body.theme-light .theme-toggle-thumb {
   padding: 0.04rem 0.42rem;
 }
 
-/* Hero carrusel (slide 1): panel azul grisáceo + texto más legible sobre vídeo */
+/* Carrusel slide 1: entrada del hero copy */
+.home-carousel:not(.home-carousel--unlocked) .hero .hero-title,
+.home-carousel:not(.home-carousel--unlocked) .hero .hero-subtitle {
+  opacity: 0;
+  transform: translateX(-4.5rem);
+  filter: blur(8px);
+  will-change: transform, opacity, filter;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .hero.hero--copy-animate .hero-title {
+  animation: carousel-copy-enter 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .hero.hero--copy-animate .hero-subtitle {
+  animation: carousel-copy-enter 1.05s cubic-bezier(0.22, 1, 0.36, 1) 1s both;
+}
+
+/* Carrusel slides 2–3: entrada escalonada */
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage:not(.carousel-section--title-reveal):not(.carousel-section--reveal) .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.problems:not(.carousel-section--title-reveal):not(.carousel-section--reveal) .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage:not(.carousel-section--reveal) .section-intro,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage:not(.carousel-section--reveal) .dev-workflow-figure,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage:not(.carousel-section--reveal) .benefits-list li,
+.home-carousel:not(.home-carousel--unlocked) .section.problems:not(.carousel-section--reveal) .problems-intro-cta-row,
+.home-carousel:not(.home-carousel--unlocked) .section.problems:not(.carousel-section--reveal) .problem-card {
+  opacity: 0;
+  transform: translateX(-4.5rem);
+  filter: blur(8px);
+  will-change: transform, opacity, filter;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--title-reveal:not(.carousel-section--reveal) .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--title-reveal:not(.carousel-section--reveal) .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal:not(.carousel-section--title-reveal) .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal:not(.carousel-section--title-reveal) .section-title {
+  animation: carousel-copy-enter 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--title-reveal.carousel-section--reveal .section-title,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--title-reveal.carousel-section--reveal .section-title {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  animation: none;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .section-intro,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problems-intro-cta-row,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .dev-workflow-figure,
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problem-card {
+  animation: carousel-copy-enter 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .section-intro,
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problems-intro-cta-row {
+  animation-delay: 1s;
+  animation-duration: 1.05s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .dev-workflow-figure {
+  animation-delay: 2.05s;
+  animation-duration: 1.25s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(1) {
+  animation-delay: 3.2s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(2) {
+  animation-delay: 3.32s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(3) {
+  animation-delay: 3.44s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(4) {
+  animation-delay: 3.56s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(5) {
+  animation-delay: 3.68s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li:nth-child(6) {
+  animation-delay: 3.8s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.ai-advantage.carousel-section--reveal .benefits-list li {
+  animation-duration: 1.05s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problem-card:nth-child(1) {
+  animation-delay: 2.05s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problem-card:nth-child(2) {
+  animation-delay: 2.2s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problem-card:nth-child(3) {
+  animation-delay: 2.35s;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .section.problems.carousel-section--reveal .problem-card {
+  animation-duration: 1.1s;
+}
+
+@keyframes carousel-copy-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(-4.5rem);
+    filter: blur(8px);
+  }
+
+  55% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-carousel:not(.home-carousel--unlocked) .hero .hero-title,
+  .home-carousel:not(.home-carousel--unlocked) .hero .hero-subtitle,
+  .home-carousel:not(.home-carousel--unlocked) .section.ai-advantage .section-title,
+  .home-carousel:not(.home-carousel--unlocked) .section.ai-advantage .section-intro,
+  .home-carousel:not(.home-carousel--unlocked) .section.ai-advantage .dev-workflow-figure,
+  .home-carousel:not(.home-carousel--unlocked) .section.ai-advantage .benefits-list li,
+  .home-carousel:not(.home-carousel--unlocked) .section.problems .section-title,
+  .home-carousel:not(.home-carousel--unlocked) .section.problems .problems-intro-cta-row,
+  .home-carousel:not(.home-carousel--unlocked) .section.problems .problem-card {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none !important;
+  }
+}
+
 .home-carousel .hero .hero-subtitle {
   font-weight: 500;
   line-height: 1.58;
@@ -848,6 +1119,12 @@ body.theme-light .theme-toggle-thumb {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
+  --carousel-title-row-offset: 5.5rem;
+  --carousel-head-pad-top: 5.5rem;
+  --carousel-hero-inner-shift: 0px;
+  --carousel-title-row-nudge: 1.25rem;
+  --carousel-section-head-nudge: -1.05rem;
+  --carousel-hero-extra-down: 3rem;
 }
 
 .home-carousel-track {
@@ -895,9 +1172,13 @@ body.theme-light .theme-toggle-thumb {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: stretch;
   padding: 5.5rem 0 6rem;
+}
+
+.home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .hero .hero-inner {
+  transform: translateY(calc(var(--carousel-hero-inner-shift, 0px) + var(--carousel-title-row-nudge, 0px)));
 }
 
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage,
@@ -906,8 +1187,7 @@ body.theme-light .theme-toggle-thumb {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  /* Misma sensación que el hero: aire bajo el header y margen para hint/puntos */
+  justify-content: flex-start;
   padding: 5.5rem 0 6rem;
 }
 
@@ -918,6 +1198,10 @@ body.theme-light .theme-toggle-thumb {
   max-width: 1100px;
   margin-left: auto;
   margin-right: auto;
+  padding-top: calc(
+    var(--carousel-title-row-offset, 5.5rem) - var(--carousel-head-pad-top) + var(--carousel-title-row-nudge, 0px) +
+      var(--carousel-section-head-nudge, 0px)
+  );
 }
 
 /* Tipografía slides 2–3 alineada con el hero (slide 1) */
@@ -1734,12 +2018,13 @@ body.page-exit-down main {
 }
 
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .section-title {
-  margin-bottom: 0.65rem;
+  margin-bottom: 0;
 }
 
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .section-intro {
-  margin-bottom: 0.75rem;
-  padding: 0.8rem 1rem;
+  margin-top: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 1.05rem 1.3rem;
 }
 
 .home-carousel:not(.home-carousel--unlocked) .home-carousel-slide .section.ai-advantage .dev-workflow-figure {
@@ -1747,7 +2032,7 @@ body.page-exit-down main {
   width: min(94vw, 1280px);
   max-width: min(94vw, 1280px);
   height: auto;
-  margin: 0 auto 0.85rem;
+  margin: 1.5rem auto 1.35rem;
   margin-left: calc(50% - min(47vw, 640px));
   padding: 0;
   border-radius: var(--radius-lg);

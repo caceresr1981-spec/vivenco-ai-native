@@ -87,6 +87,113 @@
 
   initThemeToggle();
   tuneBackgroundVideos();
+  initLogoIntro();
+
+  function initLogoIntro() {
+    var INTRO_KEY = 'vivenco-logo-intro-seen';
+    var introRoot = document.getElementById('logo-intro');
+    var introStage = document.getElementById('logo-intro-stage');
+    var introPlain = document.getElementById('logo-intro-plain');
+    var introAccent = document.getElementById('logo-intro-accent');
+    var headerLogo = document.querySelector('.header .logo');
+    if (!introRoot || !introStage || !introPlain || !introAccent || !headerLogo) return;
+
+    var prefersReducedMotion = false;
+    try {
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (prefersReducedMotion) {
+      introRoot.remove();
+      return;
+    }
+
+    try {
+      if (sessionStorage.getItem(INTRO_KEY) === '1') {
+        introRoot.remove();
+        return;
+      }
+    } catch (e) {}
+
+    document.body.classList.add('logo-intro-pending');
+    introRoot.classList.add('is-active');
+    introRoot.setAttribute('aria-hidden', 'false');
+
+    var charDelayMs = 72;
+    var charIndex = 0;
+
+    function appendChars(container, text, variant) {
+      for (var i = 0; i < text.length; i++) {
+        var ch = text.charAt(i);
+        if (ch === ' ') {
+          container.appendChild(document.createTextNode(' '));
+          continue;
+        }
+        var span = document.createElement('span');
+        span.className = 'logo-intro-char logo-intro-char--' + variant;
+        span.textContent = ch;
+        span.style.animationDelay = charIndex * charDelayMs + 'ms';
+        container.appendChild(span);
+        charIndex += 1;
+      }
+    }
+
+    appendChars(introPlain, 'VIVENCO', 'plain');
+    introPlain.appendChild(document.createTextNode(' '));
+    appendChars(introAccent, 'AI-Native', 'accent');
+
+    window.requestAnimationFrame(function () {
+      introStage.offsetHeight;
+      var spellDurationMs = Math.max(1600, charIndex * charDelayMs + 520);
+      window.setTimeout(function () {
+        morphIntroLogoToHeader(introRoot, introStage, headerLogo, INTRO_KEY);
+      }, spellDurationMs + 380);
+    });
+  }
+
+  function morphIntroLogoToHeader(introRoot, introStage, headerLogo, storageKey) {
+    var start = introStage.getBoundingClientRect();
+    var end = headerLogo.getBoundingClientRect();
+    if (!start.width || !end.width) {
+      finishLogoIntro(introRoot, headerLogo, storageKey);
+      return;
+    }
+
+    introRoot.classList.add('is-morphing');
+    introStage.classList.add('is-morphing');
+
+    var dx = end.left + end.width / 2 - (start.left + start.width / 2);
+    var dy = end.top + end.height / 2 - (start.top + start.height / 2);
+    var scale = end.width / start.width;
+
+    introStage.style.position = 'fixed';
+    introStage.style.left = start.left + 'px';
+    introStage.style.top = start.top + 'px';
+    introStage.style.margin = '0';
+    introStage.style.transform = 'translate(0, 0) scale(1)';
+    introStage.style.transformOrigin = 'center center';
+
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        introStage.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')';
+      });
+    });
+
+    window.setTimeout(function () {
+      finishLogoIntro(introRoot, headerLogo, storageKey);
+    }, 1180);
+  }
+
+  function finishLogoIntro(introRoot, headerLogo, storageKey) {
+    document.body.classList.remove('logo-intro-pending');
+    headerLogo.style.opacity = '';
+    introRoot.remove();
+    try {
+      sessionStorage.setItem(storageKey, '1');
+    } catch (e) {}
+    try {
+      window.dispatchEvent(new CustomEvent('logo-intro-complete'));
+    } catch (e2) {}
+  }
 
   // Modal diagnóstico: abrir al hacer clic en enlaces #diagnostico
   var modal = document.getElementById('diagnostico');
@@ -201,6 +308,73 @@
     var slide3TopCta = homeCarousel.querySelector('.problems-top-cta');
     var slide3CtaTimer = null;
     var slideRevealDelayMs = 1500;
+    var carouselTransitionMs = 950;
+    var carouselTitleRevealMs = 320;
+    var slideEntranceTimer = null;
+    var slideTitleRevealTimer = null;
+    var slide2HeadAlignTimer = null;
+    var carouselBooting = true;
+
+    function clearSlideEntranceTimers() {
+      if (slideEntranceTimer) {
+        window.clearTimeout(slideEntranceTimer);
+        slideEntranceTimer = null;
+      }
+      if (slideTitleRevealTimer) {
+        window.clearTimeout(slideTitleRevealTimer);
+        slideTitleRevealTimer = null;
+      }
+    }
+
+    function readCarouselLengthVar(name) {
+      var raw = getComputedStyle(homeCarousel).getPropertyValue(name).trim();
+      if (!raw) return 0;
+      if (raw.endsWith('rem')) {
+        return parseFloat(raw) * parseFloat(getComputedStyle(document.documentElement).fontSize);
+      }
+      if (raw.endsWith('px')) {
+        return parseFloat(raw);
+      }
+      return parseFloat(raw) || 0;
+    }
+
+    function syncCarouselTitleRow() {
+      if (!homeCarousel || carouselUnlocked) return;
+      var slides = homeCarousel.querySelectorAll('.home-carousel-slide');
+      if (slides.length < 3) return;
+
+      var slide1 = slides[0];
+      var slide3 = slides[2];
+      var refTitle = slide3.querySelector('.section-title');
+      var heroInner = slide1.querySelector('.hero-inner');
+      var heroTitle = slide1.querySelector('.hero-title');
+      if (!refTitle || !heroInner || !heroTitle) return;
+
+      var slide3Top = slide3.getBoundingClientRect().top;
+      var titleRowOffset = refTitle.getBoundingClientRect().top - slide3Top;
+      var slide1Top = slide1.getBoundingClientRect().top;
+      var heroTitleOffset = heroTitle.getBoundingClientRect().top - slide1Top;
+      var heroExtraDown = readCarouselLengthVar('--carousel-hero-extra-down');
+      var heroInnerShift = titleRowOffset - heroTitleOffset + heroExtraDown;
+
+      homeCarousel.style.setProperty('--carousel-title-row-offset', titleRowOffset + 'px');
+      homeCarousel.style.setProperty('--carousel-hero-inner-shift', heroInnerShift + 'px');
+    }
+
+    function scheduleCarouselTitleRow() {
+      if (slide2HeadAlignTimer) window.clearTimeout(slide2HeadAlignTimer);
+      slide2HeadAlignTimer = window.setTimeout(syncCarouselTitleRow, 50);
+    }
+
+    window.addEventListener('resize', scheduleCarouselTitleRow);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(scheduleCarouselTitleRow);
+    }
+    scheduleCarouselTitleRow();
+    window.addEventListener('logo-intro-complete', function () {
+      maybePlaySlideEntrance(getCarouselSlide(), false);
+    });
+    window.addEventListener('logo-intro-complete', scheduleCarouselTitleRow);
 
     function getCarouselHash(href) {
       if (!href) return '';
@@ -321,12 +495,97 @@
     }
 
     function applyCarouselSlide(slide) {
+      var prevSlide = getCarouselSlide();
       homeCarousel.setAttribute('data-slide', String(slide));
       syncCarouselNav();
       setNavActiveForSlide(slide);
       scheduleSlide2Cta(slide);
       scheduleSlide3Cta(slide);
       setCarouselBodyScroll(true);
+      scheduleCarouselTitleRow();
+      var afterTransition = !carouselBooting && prevSlide !== slide;
+      maybePlaySlideEntrance(slide, afterTransition);
+      carouselBooting = false;
+    }
+
+    function resetSlideEntrances() {
+      resetHeroCopyEntrance();
+      homeCarousel.querySelectorAll('.carousel-section--reveal, .carousel-section--title-reveal').forEach(function (section) {
+        section.classList.remove('carousel-section--reveal');
+        section.classList.remove('carousel-section--title-reveal');
+      });
+    }
+
+    function triggerSectionTitleReveal(section) {
+      section.classList.add('carousel-section--title-reveal');
+    }
+
+    function triggerSectionReveal(section) {
+      section.classList.add('carousel-section--reveal');
+    }
+
+    function playSlideEntrance(slide, afterTransition) {
+      if (document.body.classList.contains('logo-intro-pending')) return;
+
+      var delay = afterTransition ? carouselTransitionMs : 0;
+
+      if (slide === 0) {
+        if (delay) {
+          clearSlideEntranceTimers();
+          slideEntranceTimer = window.setTimeout(function () {
+            slideEntranceTimer = null;
+            if (getCarouselSlide() !== 0) return;
+            playHeroCopyEntrance();
+          }, delay);
+        } else {
+          playHeroCopyEntrance();
+        }
+        return;
+      }
+
+      var sectionSelector = slide === 1 ? '.section.ai-advantage' : slide === 2 ? '.section.problems' : '';
+      if (!sectionSelector) return;
+
+      var section = homeCarousel.querySelector(sectionSelector);
+      if (!section) return;
+
+      section.classList.remove('carousel-section--reveal');
+      section.classList.remove('carousel-section--title-reveal');
+
+      if (delay) {
+        clearSlideEntranceTimers();
+        slideTitleRevealTimer = window.setTimeout(function () {
+          slideTitleRevealTimer = null;
+          if (getCarouselSlide() !== slide) return;
+          triggerSectionTitleReveal(section);
+        }, carouselTitleRevealMs);
+        slideEntranceTimer = window.setTimeout(function () {
+          slideEntranceTimer = null;
+          if (getCarouselSlide() !== slide) return;
+          triggerSectionReveal(section);
+        }, delay);
+      } else {
+        triggerSectionReveal(section);
+      }
+    }
+
+    function maybePlaySlideEntrance(slide, afterTransition) {
+      clearSlideEntranceTimers();
+      resetSlideEntrances();
+      playSlideEntrance(slide, afterTransition);
+    }
+
+    function playHeroCopyEntrance() {
+      var hero = homeCarousel.querySelector('.home-carousel-slide .hero');
+      if (!hero) return;
+      hero.classList.remove('hero--copy-animate');
+      void hero.offsetWidth;
+      hero.classList.add('hero--copy-animate');
+    }
+
+    function resetHeroCopyEntrance() {
+      var hero = homeCarousel.querySelector('.home-carousel-slide .hero');
+      if (hero) hero.classList.remove('hero--copy-animate');
     }
 
     function carouselGoForward() {
