@@ -34,6 +34,64 @@
     return window.__PROJECT_UAT_STATE__;
   }
 
+  function todayIso() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function setActivitySyncStatus(message) {
+    var el = document.getElementById('activity-sync-status');
+    if (el) el.textContent = message || '';
+  }
+
+  function nextActivityId(project) {
+    var st = getState();
+    var pid = (st && st.projectId) || (project && project.id) || 'proj';
+    var used = {};
+    (project && project.activities ? project.activities : []).forEach(function (a, idx) {
+      var n = TS.normalizeActivity(a, idx, pid);
+      used[n.id] = true;
+    });
+    var i = (project && project.activities ? project.activities.length : 0) + 1;
+    var candidate = pid + '-act-' + i;
+    while (used[candidate]) {
+      i += 1;
+      candidate = pid + '-act-' + i;
+    }
+    return candidate;
+  }
+
+  function nextUatId(fullUat, projectId) {
+    var prefix = projectId || 'proj';
+    var used = {};
+    var maxIdx = 0;
+    (fullUat && fullUat.items ? fullUat.items : []).forEach(function (it) {
+      if (!it || !it.id) return;
+      used[it.id] = true;
+      var m = String(it.id).match(new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '-uat-(\\d+)$'));
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (!isNaN(n) && n > maxIdx) maxIdx = n;
+      }
+    });
+    var i = maxIdx + 1;
+    var candidate = prefix + '-uat-' + i;
+    while (used[candidate]) {
+      i += 1;
+      candidate = prefix + '-uat-' + i;
+    }
+    return candidate;
+  }
+
+  function rerenderCurrentProject() {
+    var st = getState();
+    var projectsData = window.__TRACKER_PROJECTS__;
+    if (!st || !st.project || !st.fullUat || !projectsData) return;
+    var uatItems = (st.fullUat.items || []).filter(function (it) {
+      return it.projectId === st.projectId;
+    });
+    renderProject(st.project, uatItems, projectsData, st.fullUat);
+  }
+
   function findUatItemById(id) {
     var state = getState();
     if (!state || !state.fullUat || !state.fullUat.items) return null;
@@ -115,6 +173,13 @@
       return TS.escapeHtml(String(done)) + ' / ' + TS.escapeHtml(String(total)) + ' h';
     }
     return TS.escapeHtml(String(total)) + ' h';
+  }
+
+  function fmtHoursDays(hours, perDay) {
+    var h = Number(hours) || 0;
+    var dayBase = perDay || 8;
+    var d = h > 0 ? Math.ceil(h / dayBase) : 0;
+    return String(h) + ' h' + (d > 0 ? ' (~' + String(d) + ' días)' : '');
   }
 
   function syncActivityModalSelects() {
@@ -480,6 +545,84 @@
   function setSyncStatus(message) {
     var el = document.getElementById('uat-sync-status');
     if (el) el.textContent = message || '';
+  }
+
+  function createManualActivity() {
+    var st = getState();
+    if (!st || !st.project) return;
+    if (!st.project.activities) st.project.activities = [];
+    var newId = nextActivityId(st.project);
+    var base = {
+      id: newId,
+      title: 'Nueva actividad',
+      storyRole: '',
+      storyWant: '',
+      storyBenefit: '',
+      assignee: ACTIVITY_ASSIGNEES[0],
+      estado: 'Pendiente',
+      priority: 'Media',
+      hours: 0,
+      hoursImplemented: 0,
+      fechaInicio: todayIso(),
+      fechaFin: '',
+      inProgress: false
+    };
+    st.project.activities.push(base);
+    setActivitySyncStatus('Creando actividad…');
+    persistProjectsToDisk()
+      .then(function (r) {
+        if (r && r.ok) {
+          setActivitySyncStatus('Actividad creada. Completa sus datos en el modal.');
+          rerenderCurrentProject();
+          openActivityModal(newId);
+        } else {
+          st.project.activities = st.project.activities.filter(function (a) { return a.id !== newId; });
+          syncTrackerProjectsFromState();
+          setActivitySyncStatus('No se pudo crear la actividad. Revisa API/archivo vinculado.');
+        }
+      })
+      .catch(function () {
+        st.project.activities = st.project.activities.filter(function (a) { return a.id !== newId; });
+        syncTrackerProjectsFromState();
+        setActivitySyncStatus('Error al crear actividad.');
+      });
+  }
+
+  function createManualUatCase() {
+    var st = getState();
+    if (!st || !st.fullUat) return;
+    if (!st.fullUat.items) st.fullUat.items = [];
+    var newId = nextUatId(st.fullUat, st.projectId);
+    var item = {
+      id: newId,
+      projectId: st.projectId,
+      title: 'Nuevo caso UAT',
+      descripcionTecnica: '',
+      accionesTester: '',
+      priority: 'Media',
+      status: 'Pendiente',
+      fechaCreacion: todayIso(),
+      fechaFinalizacion: ''
+    };
+    item[KEY_DESC_CONCISA] = '';
+    st.fullUat.items.push(item);
+    st.fullUat.updatedAt = todayIso();
+    setSyncStatus('Creando caso UAT…');
+    persistUatToDisk()
+      .then(function (r) {
+        if (r && r.ok) {
+          setSyncStatus('Caso UAT creado. Completa sus datos en el modal.');
+          rerenderCurrentProject();
+          openUatModal(newId);
+        } else {
+          st.fullUat.items = st.fullUat.items.filter(function (x) { return x.id !== newId; });
+          setSyncStatus('No se pudo crear el caso UAT. Revisa API/archivo vinculado.');
+        }
+      })
+      .catch(function () {
+        st.fullUat.items = st.fullUat.items.filter(function (x) { return x.id !== newId; });
+        setSyncStatus('Error al crear caso UAT.');
+      });
   }
 
   /** Mensaje visible dentro del modal (el estado bajo la tabla queda tapado por el modal). */
@@ -913,6 +1056,13 @@
   }
 
   function bindUatSection() {
+    var addBtn = document.getElementById('uat-add-manual');
+    if (addBtn) {
+      addBtn.addEventListener('click', function () {
+        createManualUatCase();
+      });
+    }
+
     var filter = document.getElementById('uat-filter');
     if (filter) {
       filter.addEventListener('change', applyUatFilter);
@@ -999,6 +1149,11 @@
         closeActivityModal(false);
         return;
       }
+      if (e.target.closest('#activity-add-manual')) {
+        e.preventDefault();
+        createManualActivity();
+        return;
+      }
       var tr = e.target.closest('#actividades-table tbody tr.activity-row-clickable');
       if (!tr) return;
       var id = tr.getAttribute('data-activity-id');
@@ -1039,6 +1194,9 @@
     };
 
     var metrics = TS.activityProjectMetrics(project.activities, project.id);
+    var companyName = project.companyName || project.client || '—';
+    var contactName = project.contactName || '—';
+    var contactEmail = project.contactEmail || '—';
 
     var activitiesRows = (project.activities || [])
       .map(function (a, idx) {
@@ -1096,7 +1254,10 @@
 
     var uatBlock =
       '<section class="project-section project-section-uat" id="uat">' +
+      '<div class="project-section-head">' +
       '<h2 class="project-section-title">UAT — pruebas de este proyecto</h2>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="uat-add-manual">+ Caso UAT manual</button>' +
+      '</div>' +
       '<p class="uat-list-hint">Haz clic en una fila para ver y editar el detalle completo del caso.</p>' +
       (uatRows
         ? buildUatToolbar() +
@@ -1113,6 +1274,67 @@
         : '<p class="project-muted">No hay casos UAT asociados a este proyecto (<code>projectId</code> en <code>data/uat.json</code>).</p>') +
       '</section>';
 
+    var wizardEstimationBlock = '';
+    if (project.wizardEstimation && project.wizardEstimation.hoursMvpByPhase) {
+      var est = project.wizardEstimation;
+      var labels = {
+        discovery: 'Discovery y modelado',
+        backend: 'API + datos (Railway / Postgres)',
+        frontend: 'Interfaz web (Vercel)',
+        devops: 'Docker, entornos y despliegue',
+        integrations: 'Integraciones y APIs externas',
+        qa: 'Pruebas, hardening y documentación'
+      };
+      var keys = ['discovery', 'backend', 'frontend', 'devops', 'integrations', 'qa'];
+      var rows = keys
+        .map(function (k) {
+          return (
+            '<tr><td>' +
+            TS.escapeHtml(labels[k] || k) +
+            '</td><td class="num">' +
+            TS.escapeHtml(fmtHoursDays(est.hoursMvpByPhase[k], est.hoursPerWorkday || 8)) +
+            '</td><td class="num">' +
+            TS.escapeHtml(fmtHoursDays(est.hoursDemoByPhase && est.hoursDemoByPhase[k], est.hoursPerWorkday || 8)) +
+            '</td></tr>'
+          );
+        })
+        .join('');
+      wizardEstimationBlock =
+        '<section class="project-section" id="estimacion">' +
+        '<h2 class="project-section-title">Estimación inicial (asistente)</h2>' +
+        '<div class="table-wrap"><table class="detail-table spec-hours-table">' +
+        '<thead><tr><th>Fase</th><th class="num">MVP (h/d)</th><th class="num">Demo (h/d)</th></tr></thead>' +
+        '<tbody>' +
+        rows +
+        '<tr class="spec-hours-total"><td><strong>Total</strong></td><td class="num"><strong>' +
+        TS.escapeHtml(fmtHoursDays(est.hoursMvpTotal, est.hoursPerWorkday || 8)) +
+        '</strong></td><td class="num"><strong>' +
+        TS.escapeHtml(fmtHoursDays(est.hoursDemoTotal, est.hoursPerWorkday || 8)) +
+        '</strong></td></tr>' +
+        '</tbody></table></div>' +
+        '</section>';
+    }
+
+    var internalSpecBlock = '';
+    if (project.specMarkdown || project.cursorPrompt) {
+      internalSpecBlock =
+        '<section class="project-section" id="especificacion-interna">' +
+        '<h2 class="project-section-title">Especificación interna</h2>' +
+        (project.specMarkdown
+          ? '<h3 class="spec-result-subheading">Especificación (Markdown)</h3>' +
+            '<pre class="spec-pre">' +
+            TS.escapeHtml(project.specMarkdown) +
+            '</pre>'
+          : '') +
+        (project.cursorPrompt
+          ? '<h3 class="spec-result-subheading">Prompt de Cursor</h3>' +
+            '<textarea class="spec-textarea" rows="12" readonly>' +
+            TS.escapeHtml(project.cursorPrompt) +
+            '</textarea>'
+          : '') +
+        '</section>';
+    }
+
     root.innerHTML =
       '<nav class="project-breadcrumb" aria-label="Migas de pan">' +
       '<a href="tracker.html">Proyectos</a>' +
@@ -1128,8 +1350,14 @@
       '<h1 class="project-detail-title">' +
       TS.escapeHtml(project.name) +
       '</h1>' +
-      '<p class="project-detail-client"><strong>Cliente:</strong> ' +
-      TS.escapeHtml(project.client) +
+      '<p class="project-detail-client"><strong>Empresa:</strong> ' +
+      TS.escapeHtml(companyName) +
+      '</p>' +
+      '<p class="project-detail-client"><strong>Persona:</strong> ' +
+      TS.escapeHtml(contactName) +
+      '</p>' +
+      '<p class="project-detail-client"><strong>Email:</strong> ' +
+      TS.escapeHtml(contactEmail) +
       '</p>' +
       '<p class="project-detail-status-wrap">Estado: <span class="tracker-status ' +
       TS.statusClass(project.status) +
@@ -1163,8 +1391,12 @@
       '</div>' +
       '</section>' +
       '<section class="project-section" id="actividades">' +
+      '<div class="project-section-head">' +
       '<h2 class="project-section-title">Actividades</h2>' +
+      '<button type="button" class="btn btn-outline btn-sm" id="activity-add-manual">+ Actividad manual</button>' +
+      '</div>' +
       '<p class="uat-list-hint">Haz clic en una fila para ver la historia de usuario y editar responsable, estado y fechas. Sin API ni <code>projects.json</code> vinculado, «Guardar actividad» guarda en <strong>este navegador</strong> (localStorage).</p>' +
+      '<p id="activity-sync-status" class="uat-sync-status" aria-live="polite"></p>' +
       '<div class="table-wrap">' +
       '<table class="detail-table" id="actividades-table">' +
       '<thead><tr><th>Actividad</th><th>Prioridad</th><th>Horas</th><th>Estado</th></tr></thead>' +
@@ -1178,6 +1410,8 @@
       (milestonesList || '<li>Sin milestones definidos.</li>') +
       '</ul>' +
       '</section>' +
+      wizardEstimationBlock +
+      internalSpecBlock +
       uatBlock;
 
     var nav = document.getElementById('project-section-nav');

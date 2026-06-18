@@ -57,10 +57,13 @@
     statusClass: function (status) {
       var map = {
         'Planificación': 'status-plan',
+        'Pendiente de aprobación': 'status-pending-approval',
+        'Pendiente Aprobación': 'status-pending-approval',
         'En desarrollo': 'status-dev',
         UAT: 'status-uat',
         Producción: 'status-prod',
-        Pausado: 'status-pause'
+        Pausado: 'status-pause',
+        Rechazado: 'status-rejected'
       };
       return map[status] || 'status-default';
     },

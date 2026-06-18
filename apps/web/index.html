@@ -6,8 +6,24 @@
   <title>Desarrollo AI-Native | ERP, BPM, BI y Automatización</title>
   <meta name="description" content="Sistemas empresariales hasta 3x-5x más rápido. Automatización, ERP, BPM y BI con desarrollo impulsado por IA." />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function () {
+      var hash = location.hash;
+      if (hash === '#soluciones' || hash === '#porque-nosotros') {
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
+      }
+    })();
+  </script>
 </head>
 <body class="site-theme-v2">
+  <div id="logo-intro" class="logo-intro" aria-hidden="true">
+    <div class="logo-intro-scrim" aria-hidden="true"></div>
+    <div class="logo-intro-stage" id="logo-intro-stage" aria-label="VIVENCO AI-Native">
+      <span class="logo-intro-plain" id="logo-intro-plain"></span><span class="logo-intro-accent" id="logo-intro-accent"></span>
+    </div>
+  </div>
+
   <header class="header">
     <div class="container header-inner">
       <a href="index.html" class="logo">VIVENCO <span>AI-Native</span></a>
@@ -34,7 +50,7 @@
     >
       <div class="hero-video-wrap" aria-hidden="true">
         <video class="hero-video" autoplay muted loop playsinline preload="auto">
-          <source src="assets/videos/BG1.mp4" type="video/mp4" />
+          <source src="assets/videos/BG9.mkv" type="video/x-matroska" />
         </video>
       </div>
       <div class="home-carousel-scrim" aria-hidden="true"></div>
@@ -61,14 +77,16 @@
               <h2 class="section-title">Por qué somos diferentes: desarrollo AI-native</h2>
               <p class="section-intro">Utilizamos herramientas avanzadas de desarrollo asistido por IA para entregar más valor en menos tiempo.</p>
 
-              <div class="ai-tools">
-                <span class="tool-badge">Cursor</span>
-                <span class="tool-badge">OpenAI GPT-4</span>
-                <span class="tool-badge">GitHub Copilot</span>
-                <span class="tool-badge">Docker</span>
-                <span class="tool-badge">Railway</span>
-                <span class="tool-badge">Vercel</span>
-              </div>
+              <figure class="dev-workflow-figure">
+                <img
+                  src="assets/images/dev-workflow-pipeline-es.png"
+                  alt="Pipeline CI/CD: Cursor, GitHub, Docker, Railway, Vercel y Cloudflare R2 — desarrollo con IA, control de versiones, contenedores, backend, frontend y edge"
+                  width="1536"
+                  height="924"
+                  loading="eager"
+                  decoding="async"
+                />
+              </figure>
 
               <ul class="benefits-list">
                 <li><strong>3x-5x más rápido</strong> en desarrollo</li>
@@ -172,7 +190,6 @@
         </button>
       </div>
 
-      <p class="home-carousel-hint" aria-hidden="true">Clic o → para avanzar · ← o botón para volver</p>
       <div class="home-carousel-dots" role="presentation">
         <span class="home-carousel-dot"></span>
         <span class="home-carousel-dot"></span>
