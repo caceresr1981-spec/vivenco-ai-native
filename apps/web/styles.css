@@ -1138,6 +1138,10 @@ body.theme-light .theme-toggle-thumb {
   will-change: transform;
 }
 
+.home-carousel.home-carousel--instant .home-carousel-track {
+  transition: none !important;
+}
+
 .home-carousel[data-slide="1"] .home-carousel-track {
   transform: translateX(-33.333333%);
 }

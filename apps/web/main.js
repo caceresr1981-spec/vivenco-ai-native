@@ -372,9 +372,12 @@
     }
     scheduleCarouselTitleRow();
     window.addEventListener('logo-intro-complete', function () {
-      maybePlaySlideEntrance(getCarouselSlide(), false);
+      var slide = getCarouselSlide();
+      scrollCarouselIntoView();
+      resetCarouselSlideScrolls();
+      scheduleCarouselTitleRow();
+      maybePlaySlideEntrance(slide, false);
     });
-    window.addEventListener('logo-intro-complete', scheduleCarouselTitleRow);
 
     function getCarouselHash(href) {
       if (!href) return '';
@@ -405,16 +408,36 @@
     }
 
     function scrollCarouselIntoView() {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
       try {
         homeCarousel.scrollIntoView({ block: 'start' });
       } catch (e) {}
     }
 
-    function goToCarouselSlide(slide) {
+    function resetCarouselSlideScrolls() {
+      homeCarousel.querySelectorAll('.home-carousel-slide').forEach(function (slideEl) {
+        slideEl.scrollTop = 0;
+      });
+    }
+
+    function setCarouselInstant(instant) {
+      homeCarousel.classList.toggle('home-carousel--instant', !!instant);
+    }
+
+    function goToCarouselSlide(slide, options) {
+      options = options || {};
       relockHomeCarousel();
+      if (options.instant) setCarouselInstant(true);
+      resetCarouselSlideScrolls();
       applyCarouselSlide(slide);
       scrollCarouselIntoView();
+      if (options.instant) {
+        void homeCarousel.offsetWidth;
+        requestAnimationFrame(function () {
+          setCarouselInstant(false);
+        });
+      }
     }
 
     function navigateToCarouselHash(hash) {
@@ -429,8 +452,10 @@
       navEl.querySelectorAll('a.nav-link--active').forEach(function (x) {
         x.classList.remove('nav-link--active');
       });
-      function activate(href) {
-        var el = navEl.querySelector('a[href="' + href + '"]');
+      function activate(fragment) {
+        var el =
+          navEl.querySelector('a[href="' + fragment + '"]') ||
+          navEl.querySelector('a[href="index.html' + fragment + '"]');
         if (el) el.classList.add('nav-link--active');
       }
       if (slide === 0) {
@@ -675,7 +700,17 @@
 
     window.addEventListener('hashchange', function () {
       if (!homeCarousel) return;
-      navigateToCarouselHash(window.location.hash || '');
+      var hash = window.location.hash || '';
+      if (slideForCarouselHash(hash) === null) return;
+      goToCarouselSlide(slideForCarouselHash(hash), { instant: true });
+    });
+
+    window.addEventListener('pageshow', function (e) {
+      if (!homeCarousel || carouselUnlocked || !e.persisted) return;
+      var hash = window.location.hash || '';
+      var slide = slideForCarouselHash(hash);
+      if (slide === null) return;
+      goToCarouselSlide(slide, { instant: true });
     });
 
     var logoLink = document.querySelector('.header .logo');
@@ -721,7 +756,7 @@
     var hash = window.location.hash || '';
     var carouselSlide = slideForCarouselHash(hash);
     if (carouselSlide !== null) {
-      goToCarouselSlide(carouselSlide);
+      goToCarouselSlide(carouselSlide, { instant: true });
     } else {
       applyCarouselSlide(0);
       if (hash && hash !== '#diagnostico') {
